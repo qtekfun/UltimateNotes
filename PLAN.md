@@ -7,7 +7,7 @@ Hitos: **M0** = CI con artefacto debug (T01) · **M1** = primera versión usable
 - [x] **T01 Scaffold + CI de artefactos (M0)**: proyecto Gradle (Kotlin DSL, catálogo, Hilt, Room, Compose, M3), copiar de UltimateTasks: `.editorconfig`, `.gitignore`, detekt/ktlint/Kover/Lint, Dependabot, CHANGELOG, CONTRIBUTING, PRIVACY, RELEASING, LICENSE, fastlane, F-Droid. Cabeceras SPDX. `ci.yml` sube el APK debug como artefacto en cada push/PR.
 - [x] **T02 Spike editor**: evaluar librerías WYSIWYG (licencia, ida y vuelta Markdown, rendimiento) vs. editor propio; documentar decisión en `SPEC.md` §6/§9.
 - [x] **T03 Cliente API Notes**: Retrofit + serialization, modelos, ETag/If-Match, paginación, errores sellados, tests con MockWebServer (304/412/401/404/5xx).
-- [ ] **T03b Release pipeline y firma**: `release.yml` y versionado como Deck (`appVersion`, versionCode derivado), clave `ultimatenotes-release.jks`, secretos `UN_*`, comprobación tag = `appVersion`, build reproducible verificado (dos builds → mismo hash). Instrucciones de la clave en `RELEASING.md`.
+- [x] **T03b Release pipeline y firma**: `release.yml` y versionado como Deck (`appVersion`, versionCode derivado), clave `ultimatenotes-release.jks`, secretos `UN_*`, comprobación tag = `appVersion`, build reproducible verificado (dos builds → mismo hash). Instrucciones de la clave en `RELEASING.md`.
 
 ## Fase 1 — Cuenta y datos
 - [x] **T04 Login Flow v2 + Keystore** (copiar de Tasks/Deck con tests), detección de app Notes y versión de API.
