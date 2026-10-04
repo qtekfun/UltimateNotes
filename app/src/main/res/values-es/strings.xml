@@ -170,4 +170,7 @@
     <string name="backup_error_not_signed_in">Inicia sesión antes de hacer una copia.</string>
     <string name="backup_error_mismatch">Hay otra cuenta con la sesión iniciada. Cierra sesión primero para restaurar esta copia.</string>
     <string name="backup_error_storage">No se pudo guardar la cuenta de forma segura en este dispositivo. No se restauró nada.</string>
+    <string name="sync_now">Sincronizar ahora</string>
+    <string name="sync_in_progress">Sincronizando…</string>
+    <string name="sync_failed">La última sincronización falló. Toca para reintentar</string>
 </resources>

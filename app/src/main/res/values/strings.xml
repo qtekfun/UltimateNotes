@@ -169,4 +169,7 @@
     <string name="backup_error_not_signed_in">Sign in before making a backup.</string>
     <string name="backup_error_mismatch">Another account is signed in. Sign out first to restore this backup.</string>
     <string name="backup_error_storage">The account could not be saved securely on this device. Nothing was restored.</string>
+    <string name="sync_now">Sync now</string>
+    <string name="sync_in_progress">Syncing…</string>
+    <string name="sync_failed">The last sync failed. Tap to retry</string>
 </resources>

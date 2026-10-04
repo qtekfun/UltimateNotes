@@ -19,6 +19,9 @@ import com.qtekfun.ultimatenotes.domain.list.ObserveNotes
 import com.qtekfun.ultimatenotes.domain.list.UndoableDeletes
 import com.qtekfun.ultimatenotes.domain.list.buildNoteGroups
 import com.qtekfun.ultimatenotes.domain.sync.SyncTrigger
+import com.qtekfun.ultimatenotes.sync.work.SyncPhase
+import com.qtekfun.ultimatenotes.sync.work.SyncStatus
+import com.qtekfun.ultimatenotes.sync.work.SyncStatusStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Clock
 import javax.inject.Inject
@@ -49,9 +52,14 @@ data class MainUiState(
     /** Multi-select mode is on while this is not empty. */
     val selectedIds: Set<Long> = emptySet(),
     val refreshing: Boolean = false,
+    /** What the background sync is doing, for the sync button in the top bar. */
+    val sync: SyncStatus = SyncStatus(),
     val pendingDeletion: PendingDeletion? = null
 ) {
     val selecting: Boolean get() = selectedIds.isNotEmpty()
+
+    /** True while a sync pass runs, however it was started. */
+    val syncing: Boolean get() = sync.phase is SyncPhase.Syncing
 }
 
 @HiltViewModel
@@ -62,6 +70,7 @@ class MainViewModel @Inject constructor(
     private val actions: NoteActions,
     private val settings: SettingsRepository,
     private val syncTrigger: SyncTrigger,
+    syncStatus: SyncStatusStore,
     private val clock: Clock,
     @Named(ListModule.LIST_SCOPE) private val appScope: CoroutineScope
 ) : ViewModel() {
@@ -109,12 +118,14 @@ class MainViewModel @Inject constructor(
         ui,
         selectedIds,
         refreshing,
-        deletionCount
-    ) { base, picked, busy, deletions ->
+        deletionCount,
+        syncStatus.status
+    ) { base, picked, busy, deletions, sync ->
         val listed = base.groups.flatMap { group -> group.notes.map { it.localId } }.toSet()
         base.copy(
             selectedIds = picked.intersect(listed),
-            refreshing = busy,
+            refreshing = busy || sync.phase is SyncPhase.Syncing,
+            sync = sync,
             pendingDeletion = base.pendingDeletion?.copy(token = deletions)
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_MS), MainUiState())
@@ -126,7 +137,7 @@ class MainViewModel @Inject constructor(
 
     fun setSortOrder(order: NoteSortOrder) = settings.setSortOrder(order)
 
-    /** Pull-to-refresh: asks the sync layer for a pass and shows the indicator meanwhile. */
+    /** Pull-to-refresh and the sync button: asks the sync layer for a pass now. */
     fun refresh() {
         if (refreshing.value) return
         refreshing.value = true
