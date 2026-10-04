@@ -104,6 +104,9 @@ android {
     sourceSets {
         // Exported Room schemas, read by MigrationTestHelper on the device.
         getByName("androidTest").assets.directories.add("$projectDir/schemas")
+        // The fake Notes server is shared by the JVM tests and the on-device performance tests.
+        getByName("test").kotlin.directories.add("src/sharedTest/java")
+        getByName("androidTest").kotlin.directories.add("src/sharedTest/java")
     }
 
     lint {
@@ -132,7 +135,7 @@ detekt {
     buildUponDefaultConfig = true
     allRules = false
     config.setFrom(rootProject.file("config/detekt/detekt.yml"))
-    source.setFrom("src/main/java", "src/test/java", "src/androidTest/java")
+    source.setFrom("src/main/java", "src/test/java", "src/androidTest/java", "src/sharedTest/java")
 }
 
 tasks.withType<Detekt>().configureEach {
@@ -353,6 +356,7 @@ dependencies {
     // Migration tests run on a device (MigrationTestHelper); they are compiled but not run by check.
     androidTestImplementation(libs.room.testing)
     androidTestImplementation(libs.sqlite.bundled)
+    androidTestImplementation(libs.turbine)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.ext.junit)
     // Store screenshots (ScreenshotTest): Hilt test bindings (Apache-2.0, same version as Hilt)
@@ -362,6 +366,8 @@ dependencies {
     androidTestImplementation(libs.androidx.work.testing)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    // Accessibility Test Framework checks (Apache-2.0, Google) for the a11y audit on a device.
+    androidTestImplementation(libs.androidx.compose.ui.test.accessibility)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
     testImplementation(platform(libs.junit.bom))

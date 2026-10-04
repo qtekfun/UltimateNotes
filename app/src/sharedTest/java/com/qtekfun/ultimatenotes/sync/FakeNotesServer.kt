@@ -36,6 +36,7 @@ import retrofit2.Response
  *   (illegal characters removed, at most 100 characters) and numbered ("x (2)") when another note
  *   of the same category has it. The content never renames a note.
  */
+@Suppress("TooManyFunctions")
 class FakeNotesServer : NotesApi {
     private data class Stored(
         val id: Long,

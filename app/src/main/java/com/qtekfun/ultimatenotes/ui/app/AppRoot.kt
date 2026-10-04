@@ -35,9 +35,13 @@ fun AppRoot(
 ) {
     val destination by viewModel.destination.collectAsStateWithLifecycle()
     val theme by viewModel.theme.collectAsStateWithLifecycle()
-    var inSettings by rememberSaveable(destination) { mutableStateOf(false) }
-    var openNote by rememberSaveable(destination) { mutableStateOf<Long?>(null) }
-    var newNoteCategory by rememberSaveable(destination) { mutableStateOf("") }
+    // Reset when the account changes (login <-> signed in), but not while the session is still
+    // being read: after process death `destination` starts at LOADING, and keying on it would
+    // throw away the saved editor and settings state.
+    val signedOut = destination == AppDestination.LOGIN
+    var inSettings by rememberSaveable(signedOut) { mutableStateOf(false) }
+    var openNote by rememberSaveable(signedOut) { mutableStateOf<Long?>(null) }
+    var newNoteCategory by rememberSaveable(signedOut) { mutableStateOf("") }
     // A widget tap: once signed in, go to that note (or a new one) and forget the request.
     LaunchedEffect(launchRequest, destination) {
         if (launchRequest != null && destination == AppDestination.MAIN) {

@@ -372,9 +372,9 @@ private class LayoutHolder {
     var getResult: (() -> TextLayoutResult?)? = null
 }
 
-private const val MARKER_ALPHA = 0.6f
+private const val MARKER_ALPHA = 0.75f
 private const val CODE_ALPHA = 0.6f
-private const val DONE_ALPHA = 0.55f
+private const val DONE_ALPHA = 0.7f
 private const val HINT_ALPHA = 0.7f
 private val MIN_TOUCH_TARGET = 48.dp
 internal val TEXT_PADDING = 16.dp
