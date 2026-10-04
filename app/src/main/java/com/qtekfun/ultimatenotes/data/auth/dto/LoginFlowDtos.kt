@@ -17,10 +17,18 @@ data class StatusDto(
 /** Response of POST index.php/login/v2. */
 @Serializable
 data class LoginStartDto(val poll: Poll, val login: String) {
+    /** The login URL embeds the one-time token, so nothing is printed. */
+    override fun toString(): String = "LoginStartDto(<redacted>)"
+
     @Serializable
-    data class Poll(val token: String, val endpoint: String)
+    data class Poll(val token: String, val endpoint: String) {
+        override fun toString(): String = "Poll(token=***)"
+    }
 }
 
 /** Response of the poll endpoint once the user has logged in. Returned only once. */
 @Serializable
-data class LoginResultDto(val server: String, val loginName: String, val appPassword: String)
+data class LoginResultDto(val server: String, val loginName: String, val appPassword: String) {
+    /** Never reveals the app password. */
+    override fun toString(): String = "LoginResultDto(server=$server, appPassword=***)"
+}

@@ -32,4 +32,8 @@ data class NoteEntity(
     val favorite: Boolean = false,
     val syncState: SyncState = SyncState.NEW,
     val lastSyncedEtag: String? = null
-)
+) {
+    /** Never prints the title, folder or text of the note (privacy: nothing of a note is logged). */
+    override fun toString(): String =
+        "NoteEntity(localId=$localId, id=$id, syncState=$syncState, content=<redacted>)"
+}

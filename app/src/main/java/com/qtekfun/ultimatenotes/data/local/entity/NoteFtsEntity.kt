@@ -19,4 +19,7 @@ import androidx.room3.FtsOptions
     tokenizerArgs = ["remove_diacritics=1"]
 )
 @Entity(tableName = "note_fts")
-data class NoteFtsEntity(val title: String, val content: String)
+data class NoteFtsEntity(val title: String, val content: String) {
+    /** Never prints the note. */
+    override fun toString(): String = "NoteFtsEntity(<redacted>)"
+}

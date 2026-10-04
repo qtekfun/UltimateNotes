@@ -39,7 +39,10 @@ sealed interface SegmentKind {
     /** Inline code, backticks included. */
     data object Code : SegmentKind
 
-    data class Link(val destination: String) : SegmentKind
+    data class Link(val destination: String) : SegmentKind {
+        /** Never prints the destination, which comes from a note. */
+        override fun toString(): String = "Link"
+    }
 
     /** Syntax the editor does not model (tables, HTML, code blocks, images...); leave untouched. */
     data object Opaque : SegmentKind

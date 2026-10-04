@@ -12,7 +12,10 @@ import java.time.Clock
 import javax.inject.Inject
 
 /** A note [NoteWriter.create] stored: its local id and the title it was given. */
-data class CreatedNote(val localId: Long, val title: String)
+data class CreatedNote(val localId: Long, val title: String) {
+    /** Never prints the title. */
+    override fun toString(): String = "CreatedNote(localId=$localId)"
+}
 
 /**
  * Stores what the user typed. A new note is created as NEW; editing a synced one marks it DIRTY

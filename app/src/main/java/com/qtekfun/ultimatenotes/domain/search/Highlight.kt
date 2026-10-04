@@ -8,6 +8,9 @@ import com.qtekfun.ultimatenotes.domain.TextRange
 
 /** A text to show on one line or two, with the parts that matched the search. */
 data class Highlighted(val text: String, val ranges: List<TextRange>) {
+    /** Never prints the text, which comes from a note. */
+    override fun toString(): String = "Highlighted(length=${text.length}, ranges=${ranges.size})"
+
     companion object {
         val EMPTY = Highlighted("", emptyList())
     }

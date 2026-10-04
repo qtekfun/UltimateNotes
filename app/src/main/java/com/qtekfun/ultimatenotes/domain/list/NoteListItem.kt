@@ -14,4 +14,7 @@ data class NoteListItem(
     val category: String,
     val favorite: Boolean,
     val modified: Instant
-)
+) {
+    /** Never prints the title, preview or folder of the note. */
+    override fun toString(): String = "NoteListItem(localId=$localId, content=<redacted>)"
+}

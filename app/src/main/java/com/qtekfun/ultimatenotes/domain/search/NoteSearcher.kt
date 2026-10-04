@@ -25,7 +25,10 @@ data class SearchResult(
     val category: String,
     val favorite: Boolean,
     val modified: Instant
-)
+) {
+    /** Never prints the title, snippet or folder of the note. */
+    override fun toString(): String = "SearchResult(localId=$localId, content=<redacted>)"
+}
 
 /** Searches the notes on the device; results follow the notes as they change. */
 fun interface NoteSearcher {
