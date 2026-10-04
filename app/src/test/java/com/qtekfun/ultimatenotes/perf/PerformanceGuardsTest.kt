@@ -174,7 +174,7 @@ class PerformanceGuardsTest {
         const val WARMUP = 3
         const val RUNS = 9
         const val NANOS_PER_MILLI = 1_000_000.0
-        const val LIST_BUDGET = 2_000.0
+        const val LIST_BUDGET = 500.0
         const val SEARCH_BUDGET = 1_000.0
         const val MARKDOWN_BUDGET = 1_000.0
         const val CHECKLIST_BUDGET = 500.0

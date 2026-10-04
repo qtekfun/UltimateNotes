@@ -40,19 +40,30 @@ object NoteSummary {
      */
     fun preview(text: String, title: String, maxLength: Int = DEFAULT_PREVIEW_LENGTH): String {
         require(maxLength >= 0) { "maxLength must not be negative" }
-        val lines = contentLines(text).toList()
-        val skipFirst = lines.isNotEmpty() && repeatsTitle(lines.first(), title)
-        val joined = lines.drop(if (skipFirst) 1 else 0).joinToString(" ")
-        if (joined.length <= maxLength) return joined
-        val cut = if (maxLength > 0 &&
-            joined[maxLength - 1].isHighSurrogate()
-        ) {
-            maxLength - 1
-        } else {
-            maxLength
+        val lines = contentLines(text).iterator()
+        // Only as many lines as the preview needs: a note can be long and a list shows thousands.
+        val joined = StringBuilder()
+        fun add(line: String) {
+            if (joined.isNotEmpty()) joined.append(' ')
+            joined.append(line)
         }
-        return joined.substring(0, cut)
+        if (lines.hasNext()) {
+            val first = lines.next()
+            if (!repeatsTitle(first, title)) add(first)
+            while (joined.length <= maxLength && lines.hasNext()) add(lines.next())
+        }
+        return if (joined.length <=
+            maxLength
+        ) {
+            joined.toString()
+        } else {
+            joined.substring(0, cutAt(joined, maxLength))
+        }
     }
+
+    /** [maxLength], or one less when that would split a surrogate pair. */
+    private fun cutAt(text: CharSequence, maxLength: Int): Int =
+        if (maxLength > 0 && text[maxLength - 1].isHighSurrogate()) maxLength - 1 else maxLength
 
     /**
      * Whether [line] is [title] as the server stores it: it strips some characters and cuts the
