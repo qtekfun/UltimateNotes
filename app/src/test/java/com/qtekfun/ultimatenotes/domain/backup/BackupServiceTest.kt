@@ -31,7 +31,10 @@ class BackupServiceTest {
     private val passphrase = "correct horse".toCharArray()
 
     /** A phone: its own storage, preferences and session. */
-    private class Phone(codec: PassphraseBackupCipher, cipher: com.qtekfun.ultimatenotes.data.auth.SecretCipher = FakeCipher()) {
+    private class Phone(
+        codec: PassphraseBackupCipher,
+        cipher: com.qtekfun.ultimatenotes.data.auth.SecretCipher = FakeCipher()
+    ) {
         val storage = FakeAccountStorage()
         val preferences = FakePreferences()
         val settings = SettingsRepository(preferences)
@@ -39,8 +42,7 @@ class BackupServiceTest {
         val service = BackupService(codec, settings, session, Dispatchers.Unconfined)
     }
 
-    private fun server(url: String) =
-        (ServerUrl.parse(url) as ServerUrl.ParseResult.Valid).url
+    private fun server(url: String) = (ServerUrl.parse(url) as ServerUrl.ParseResult.Valid).url
 
     private suspend fun Phone.signIn(
         url: String = "https://cloud.example.com/nextcloud",
@@ -77,17 +79,18 @@ class BackupServiceTest {
     }
 
     @Test
-    fun `the restored password is stored through the keystore cipher, not in plain text`() = runTest {
-        val old = Phone(codec)
-        old.signIn(password = "sup3r-s3cret")
-        val fresh = Phone(codec)
+    fun `the restored password is stored through the keystore cipher, not in plain text`() =
+        runTest {
+            val old = Phone(codec)
+            old.signIn(password = "sup3r-s3cret")
+            val fresh = Phone(codec)
 
-        fresh.service.restore(exportFrom(old), passphrase)
+            fresh.service.restore(exportFrom(old), passphrase)
 
-        val stored = fresh.storage.stored!!
-        assertEquals("ana", stored.username)
-        assertFalse(stored.secret.ciphertext.toString(Charsets.UTF_8).contains("sup3r-s3cret"))
-    }
+            val stored = fresh.storage.stored!!
+            assertEquals("ana", stored.username)
+            assertFalse(stored.secret.ciphertext.toString(Charsets.UTF_8).contains("sup3r-s3cret"))
+        }
 
     @Test
     fun `the app lock switch is not carried to another device`() = runTest {
@@ -170,7 +173,10 @@ class BackupServiceTest {
         val file = exportFrom(old)
         val fresh = Phone(codec)
 
-        val damaged = file.copyOf().also { it[it.size - 3] = (it[it.size - 3].toInt() xor 1).toByte() }
+        val damaged = file.copyOf().also {
+            it[it.size - 3] =
+                (it[it.size - 3].toInt() xor 1).toByte()
+        }
         assertEquals(
             BackupError.WrongPassphraseOrCorrupt,
             failure(fresh.service.restore(damaged, passphrase))
@@ -212,6 +218,9 @@ class BackupServiceTest {
         "syncInterval":"HOUR","syncNetwork":"ANY","lockTimeout":"IMMEDIATELY","secureWindow":false}
     """.trimIndent().replace("\n", "")
 
+    private val goodAccount =
+        """{"serverUrl":"https://c.example/","username":"a","appPassword":"p"}"""
+
     @Test
     fun `authentic but malformed content is refused whole`() = runTest {
         val cases = listOf(
@@ -220,7 +229,10 @@ class BackupServiceTest {
             """{$goodSettings}""",
             """{$goodSettings,"account":{"serverUrl":"https://c.example/","username":"a"}}""",
             // unknown enum value: no half-applied settings
-            """{${goodSettings.replace("DARK", "NEON")},"account":{"serverUrl":"https://c.example/","username":"a","appPassword":"p"}}"""
+            """{${goodSettings.replace(
+                "DARK",
+                "NEON"
+            )},"account":{"serverUrl":"https://c.example/","username":"a","appPassword":"p"}}"""
         )
 
         for (content in cases) {
@@ -251,7 +263,7 @@ class BackupServiceTest {
     @Test
     fun `unknown fields from a later minor addition are ignored`() = runTest {
         val (fresh, result) = restoreCrafted(
-            """{$goodSettings,"extra":1,"account":{"serverUrl":"https://c.example/","username":"a","appPassword":"p"}}"""
+            """{$goodSettings,"extra":1,"account":$goodAccount}"""
         )
 
         assertEquals(BackupResult.Success(Unit), result)
@@ -268,8 +280,9 @@ class BackupServiceTest {
         val broken = object : com.qtekfun.ultimatenotes.data.auth.SecretCipher {
             override fun encrypt(plaintext: ByteArray) = throw GeneralSecurityException("no key")
 
-            override fun decrypt(secret: com.qtekfun.ultimatenotes.data.auth.EncryptedSecret): ByteArray =
-                throw GeneralSecurityException("no key")
+            override fun decrypt(
+                secret: com.qtekfun.ultimatenotes.data.auth.EncryptedSecret
+            ): ByteArray = throw GeneralSecurityException("no key")
         }
         val fresh = Phone(codec, broken)
 
@@ -306,7 +319,11 @@ class BackupServiceTest {
         val longName = "ü".repeat(2_000)
         val longPassword = "pässwörd-日本語-".repeat(2_000)
         val old = Phone(codec)
-        old.signIn(url = "https://cloud.example.com/" + "a/".repeat(100), user = longName, password = longPassword)
+        old.signIn(
+            url = "https://cloud.example.com/" + "a/".repeat(100),
+            user = longName,
+            password = longPassword
+        )
         val fresh = Phone(codec)
 
         val unicodePassphrase = "contraseña-🔐-日本".toCharArray()

@@ -65,19 +65,6 @@ class SettingsRepository @Inject constructor(
 
     fun setSecureWindow(on: Boolean) = preferences.edit { putBoolean(KEY_SECURE_WINDOW, on) }
 
-    /** Replaces every setting at once (backup restore); observers see a single change. */
-    fun restore(settings: AppSettings) = preferences.edit {
-        putString(KEY_THEME, settings.theme.name)
-        putBoolean(KEY_AMOLED, settings.amoled)
-        putBoolean(KEY_DYNAMIC_COLOR, settings.dynamicColor)
-        putString(KEY_SORT_ORDER, settings.sortOrder.name)
-        putString(KEY_SYNC_INTERVAL, settings.syncInterval.name)
-        putString(KEY_SYNC_NETWORK, settings.syncNetwork.name)
-        putBoolean(KEY_APP_LOCK, settings.appLockEnabled)
-        putString(KEY_LOCK_TIMEOUT, settings.lockTimeout.name)
-        putBoolean(KEY_SECURE_WINDOW, settings.secureWindow)
-    }
-
     /** The settings right now, for callers that cannot wait for the [settings] flow. */
     val current: AppSettings get() = read()
 

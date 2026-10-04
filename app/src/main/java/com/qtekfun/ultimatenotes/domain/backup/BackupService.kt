@@ -72,26 +72,38 @@ class BackupService @Inject constructor(
         val server = payload?.let {
             ServerUrl.parse(it.account.serverUrl) as? ServerUrl.ParseResult.Valid
         }
-        if (payload == null || server == null || !payload.account.isComplete()) {
-            return BackupResult.Failure(BackupError.InvalidContent)
+        return if (payload == null || server == null || !payload.account.isComplete()) {
+            BackupResult.Failure(BackupError.InvalidContent)
+        } else if (!canReplaceAccount(server.url, payload.account)) {
+            BackupResult.Failure(BackupError.AccountMismatch)
+        } else {
+            signInAndApply(server.url, payload)
         }
+    }
+
+    /** A signed-in account may only be refreshed by a backup of itself. */
+    private suspend fun canReplaceAccount(server: ServerUrl, backup: BackupAccount): Boolean {
         val signedIn = session.activeAccount.value ?: session.restore()
-        val sameAccount = signedIn == null ||
-            (
-                signedIn.serverUrl == server.url.toString() &&
-                    signedIn.username == payload.account.username
-                )
-        if (!sameAccount) return BackupResult.Failure(BackupError.AccountMismatch)
-        return try {
-            session.signIn(
-                server.url,
-                Credentials(payload.account.username, payload.account.appPassword)
-            )
-            settings.restore(payload.settings.applyTo(settings.current))
-            BackupResult.Success(Unit)
-        } catch (_: GeneralSecurityException) {
-            BackupResult.Failure(BackupError.StorageFailed)
+        return signedIn == null ||
+            (signedIn.serverUrl == server.toString() && signedIn.username == backup.username)
+    }
+
+    /** The account goes first: if the Keystore refuses it, no setting has been touched. */
+    private suspend fun signInAndApply(server: ServerUrl, payload: BackupPayload) = try {
+        session.signIn(server, Credentials(payload.account.username, payload.account.appPassword))
+        with(payload.settings) {
+            settings.setTheme(theme)
+            settings.setAmoled(amoled)
+            settings.setDynamicColor(dynamicColor)
+            settings.setSortOrder(sortOrder)
+            settings.setSyncInterval(syncInterval)
+            settings.setSyncNetwork(syncNetwork)
+            settings.setLockTimeout(lockTimeout)
+            settings.setSecureWindow(secureWindow)
         }
+        BackupResult.Success(Unit)
+    } catch (_: GeneralSecurityException) {
+        BackupResult.Failure(BackupError.StorageFailed)
     }
 
     private fun parse(plain: ByteArray): BackupPayload? = try {
@@ -105,17 +117,6 @@ class BackupService @Inject constructor(
     private fun BackupAccount.isComplete() = username.isNotBlank() && appPassword.isNotEmpty()
 
     private fun AppSettings.toBackup() = BackupSettings(
-        theme = theme,
-        amoled = amoled,
-        dynamicColor = dynamicColor,
-        sortOrder = sortOrder,
-        syncInterval = syncInterval,
-        syncNetwork = syncNetwork,
-        lockTimeout = lockTimeout,
-        secureWindow = secureWindow
-    )
-
-    private fun BackupSettings.applyTo(current: AppSettings) = current.copy(
         theme = theme,
         amoled = amoled,
         dynamicColor = dynamicColor,
