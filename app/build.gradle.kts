@@ -51,6 +51,7 @@ android {
         targetSdk = 37
         versionCode = versionCodeOf(appVersion)
         versionName = appVersion
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
@@ -283,6 +284,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
@@ -301,11 +303,15 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
 
     testImplementation(libs.okhttp.mockwebserver)
+    testImplementation(libs.okhttp.mockwebserver.junit5)
     testImplementation(libs.kotlinx.coroutines.test)
 
     implementation(libs.commonmark)
     implementation(libs.commonmark.ext.gfm.strikethrough)
     implementation(libs.commonmark.ext.gfm.tables)
+
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.ext.junit)
 
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)

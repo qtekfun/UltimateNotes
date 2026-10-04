@@ -10,7 +10,7 @@ Hitos: **M0** = CI con artefacto debug (T01) · **M1** = primera versión usable
 - [ ] **T03b Release pipeline y firma**: `release.yml` y versionado como Deck (`appVersion`, versionCode derivado), clave `ultimatenotes-release.jks`, secretos `UN_*`, comprobación tag = `appVersion`, build reproducible verificado (dos builds → mismo hash). Instrucciones de la clave en `RELEASING.md`.
 
 ## Fase 1 — Cuenta y datos
-- [ ] **T04 Login Flow v2 + Keystore** (copiar de Tasks/Deck con tests), detección de app Notes y versión de API.
+- [x] **T04 Login Flow v2 + Keystore** (copiar de Tasks/Deck con tests), detección de app Notes y versión de API.
 - [ ] **T05 Persistencia Room**: entidades, DAOs, FTS, migraciones (con tests de migración), tests en memoria.
 - [x] **T06 Dominio Markdown**: modelo de bloques, parser/serializador con bloques opacos, parser de checklists, derivación de título. **100% cobertura** + corpus de ida y vuelta.
 

@@ -7,4 +7,21 @@
     <string name="app_name">UltimateNotes</string>
     <string name="home_title">Notas</string>
     <string name="home_version">Versión %1$s</string>
+    <string name="login_title">Inicia sesión en Nextcloud</string>
+    <string name="login_server_label">Dirección del servidor</string>
+    <string name="login_button">Iniciar sesión</string>
+    <string name="login_checking">Comprobando el servidor…</string>
+    <string name="login_waiting">Completa el inicio de sesión en el navegador y vuelve aquí.</string>
+    <string name="login_reopen">Abrir el navegador de nuevo</string>
+    <string name="login_cancel">Cancelar</string>
+    <string name="login_signing_in">Iniciando sesión…</string>
+    <string name="login_error_invalid_url">Eso no parece una dirección de servidor.</string>
+    <string name="login_error_insecure">Usa una dirección https://. UltimateNotes nunca se conecta sin cifrado.</string>
+    <string name="login_error_not_nextcloud">No se ha encontrado un servidor Nextcloud en esa dirección.</string>
+    <string name="login_error_unreachable">No se puede contactar con el servidor. Revisa la dirección y tu conexión.</string>
+    <string name="login_error_tls">El certificado del servidor no es de confianza. Si usa su propia autoridad, instálala en los ajustes de Android.</string>
+    <string name="login_error_expired">El inicio de sesión ha tardado demasiado. Vuelve a intentarlo.</string>
+    <string name="login_error_notes_missing">La aplicación Notas no está instalada o activada en este servidor.</string>
+    <string name="login_error_unsupported_api">La aplicación Notas de este servidor es demasiado antigua. Actualízala a una versión compatible con la API 1.2 o posterior.</string>
+    <string name="login_error_unknown">Algo ha fallado al iniciar sesión. Vuelve a intentarlo.</string>
 </resources>
