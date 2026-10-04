@@ -230,6 +230,8 @@ tasks.named("check") {
 // ISC...) only when a dependency needs them; licensee warns about unused ones.
 licensee {
     allow("Apache-2.0")
+    // commonmark-java (Markdown analysis in the domain layer).
+    allow("BSD-2-Clause")
 }
 
 // Google Play Services, Firebase and Crashlytics are banned outright (F-Droid
@@ -300,6 +302,11 @@ dependencies {
 
     testImplementation(libs.okhttp.mockwebserver)
     testImplementation(libs.kotlinx.coroutines.test)
+
+    implementation(libs.commonmark)
+    implementation(libs.commonmark.ext.gfm.strikethrough)
+    implementation(libs.commonmark.ext.gfm.tables)
+
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
     testRuntimeOnly(libs.junit.platform.launcher)
