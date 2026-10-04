@@ -33,6 +33,6 @@ Hitos: **M0** = CI con artefacto debug (T01) · **M1** = primera versión usable
 ## Fase 5 — Calidad y cierre
 - [ ] **T17 Tests de UI instrumentados** de todos los flujos clave (SPEC §11) en la matriz de dispositivos; accesibilidad (fuente grande, TalkBack) y rendimiento (5 000 notas).
 - [x] **T18 E2E contra Nextcloud real** (notas `[test]`) + job opcional de CI con Nextcloud en Docker; checklist E2E en `RELEASING.md`. Hecho: `e2e/` (compose + `setup.sh`), `./gradlew e2eTest` (20 tests, ejecutados contra Nextcloud 33.0.9 en Docker local), workflow `e2e.yml`, `docs/decisions/0004-e2e.md`. Queda manual en dispositivo: login flow, UI, offline real en avión, biometría, widget, PDF, backup, actualización sobre versión previa.
-- [ ] **T19 Revisión de seguridad y privacidad**: sin logs de contenido, `allowBackup=false`, escaneo de dependencias (licencias GPLv3), `PRIVACY.md`.
+- [x] **T19 Revisión de seguridad y privacidad**: sin logs de contenido, `allowBackup=false`, escaneo de dependencias (licencias GPLv3), `PRIVACY.md`.
 - [ ] **T20 Preparar F-Droid**: metadatos fastlane EN/ES, capturas, changelogs por versionCode, `fdroid/com.qtekfun.ultimatenotes.yml`, README, verificación reproducible local con `fdroid build`.
 - [ ] **T21 Release 1.0.0 (M3)**: `-rc.N` necesarios, tag `v1.0.0`, MR a fdroiddata.
