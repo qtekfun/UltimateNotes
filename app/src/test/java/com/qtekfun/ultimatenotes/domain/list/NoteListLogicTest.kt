@@ -37,11 +37,11 @@ class NoteListLogicTest {
     // --- toListItem ---------------------------------------------------------------------------
 
     @Test
-    fun `a stored note becomes a row with title and preview from its text`() {
+    fun `a stored note becomes a row with its title and a preview without the repeated line`() {
         val entity = NoteEntity(
             localId = 4,
             modified = 1_700_000_000,
-            title = "stale",
+            title = "Plan",
             category = "Work",
             content = "# Plan\n- first\n- second",
             favorite = true
@@ -60,9 +60,19 @@ class NoteListLogicTest {
     }
 
     @Test
-    fun `an empty text falls back to the stored title`() {
-        val entity = NoteEntity(localId = 1, title = "From server", content = "")
-        assertEquals("From server", entity.toListItem().title)
+    fun `the title is the stored one even when the first line says something else`() {
+        val entity = NoteEntity(localId = 1, title = "Groceries", content = "Milk\neggs")
+        val item = entity.toListItem()
+        assertEquals("Groceries", item.title)
+        assertEquals("Milk eggs", item.preview)
+    }
+
+    @Test
+    fun `a note with no body has an empty preview`() {
+        assertEquals(
+            "",
+            NoteEntity(localId = 1, title = "From server", content = "").toListItem().preview
+        )
     }
 
     // --- folder filtering ---------------------------------------------------------------------

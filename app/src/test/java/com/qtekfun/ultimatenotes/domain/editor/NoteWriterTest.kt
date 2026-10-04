@@ -22,7 +22,7 @@ class NoteWriterTest {
     private val database = inMemoryDatabase()
     private val dao = database.noteDao()
     private val now = Instant.parse("2026-10-15T12:00:00Z")
-    private val writer = NoteWriter(dao, Clock.fixed(now, ZoneOffset.UTC))
+    private val writer = NoteWriter(dao, Clock.fixed(now, ZoneOffset.UTC)) { "New note" }
 
     private var nextRemoteId = 1L
 
@@ -45,9 +45,10 @@ class NoteWriterTest {
     )
 
     @Test
-    fun `a new note is stored as NEW with a derived title in the given folder`() = runTest {
-        val id = writer.create("# Plan\nbody", " Work / Plans ", favorite = true)!!
-        val note = dao.get(id)!!
+    fun `a new untitled note derives its title once from the first body line`() = runTest {
+        val created = writer.create("", "# Plan\nbody", " Work / Plans ", favorite = true)!!
+        val note = dao.get(created.localId)!!
+        assertEquals("Plan", created.title)
         assertEquals("Plan", note.title)
         assertEquals("# Plan\nbody", note.content)
         assertEquals("Work/Plans", note.category)
@@ -58,19 +59,40 @@ class NoteWriterTest {
     }
 
     @Test
-    fun `a blank new note is not stored`() = runTest {
-        assertNull(writer.create(" \n\t", "", favorite = false))
-        assertNull(writer.create("", "", favorite = false))
+    fun `a title the user typed is kept, trimmed, and not derived from the body`() = runTest {
+        val created = writer.create("  Groceries ", "Milk\neggs", "", favorite = false)!!
+        assertEquals("Groceries", dao.get(created.localId)!!.title)
+    }
+
+    @Test
+    fun `a body with no words falls back to the localized default title`() = runTest {
+        val created = writer.create("", "-\n#", "", favorite = false)!!
+        assertEquals("New note", dao.get(created.localId)!!.title)
+    }
+
+    @Test
+    fun `a note with only a title is created`() = runTest {
+        val created = writer.create("Ideas", "", "", favorite = false)!!
+        val note = dao.get(created.localId)!!
+        assertEquals("Ideas", note.title)
+        assertEquals("", note.content)
+    }
+
+    @Test
+    fun `a new note with neither title nor body is not stored`() = runTest {
+        assertNull(writer.create(" ", " \n\t", "", favorite = false))
+        assertNull(writer.create("", "", "", favorite = false))
         assertEquals(emptyList<NoteEntity>(), dao.observeAll().first())
     }
 
     @Test
     fun `editing a synced note makes it dirty and bumps the date`() = runTest {
         val id = stored(SyncState.SYNCED)
-        assertTrue(writer.update(id, "# New title\nx"))
+        assertTrue(writer.update(id, "old", "# Heading\nx"))
         val note = dao.get(id)!!
-        assertEquals("# New title\nx", note.content)
-        assertEquals("New title", note.title)
+        assertEquals("# Heading\nx", note.content)
+        // The title is not re-derived from the text.
+        assertEquals("old", note.title)
         assertEquals(SyncState.DIRTY, note.syncState)
         assertEquals(now.epochSecond, note.modified)
         assertEquals("e1", note.lastSyncedEtag)
@@ -79,18 +101,37 @@ class NoteWriterTest {
     }
 
     @Test
+    fun `changing only the title stores it and makes the note dirty`() = runTest {
+        val id = stored(SyncState.SYNCED)
+        assertTrue(writer.update(id, " Renamed ", "old"))
+        val note = dao.get(id)!!
+        assertEquals("Renamed", note.title)
+        assertEquals("old", note.content)
+        assertEquals(SyncState.DIRTY, note.syncState)
+        assertEquals(now.epochSecond, note.modified)
+    }
+
+    @Test
+    fun `a blank title leaves the stored one alone`() = runTest {
+        val id = stored(SyncState.SYNCED)
+        assertTrue(writer.update(id, "  ", "new text"))
+        assertEquals("old", dao.get(id)!!.title)
+        assertFalse(writer.update(id, "", "new text"))
+    }
+
+    @Test
     fun `editing keeps NEW, DIRTY and CONFLICT as they are`() = runTest {
         for (state in listOf(SyncState.NEW, SyncState.DIRTY, SyncState.CONFLICT)) {
             val id = stored(state)
-            assertTrue(writer.update(id, "edited"))
+            assertTrue(writer.update(id, "old", "edited"))
             assertEquals(state, dao.get(id)!!.syncState)
         }
     }
 
     @Test
-    fun `unchanged text writes nothing`() = runTest {
+    fun `unchanged title and text write nothing`() = runTest {
         val id = stored(SyncState.SYNCED)
-        assertFalse(writer.update(id, "old"))
+        assertFalse(writer.update(id, "old", "old"))
         val note = dao.get(id)!!
         assertEquals(SyncState.SYNCED, note.syncState)
         assertEquals(100, note.modified)
@@ -99,13 +140,13 @@ class NoteWriterTest {
     @Test
     fun `read-only, deleted and missing notes are never written`() = runTest {
         val readonly = stored(SyncState.SYNCED, readonly = true)
-        assertFalse(writer.update(readonly, "edited"))
+        assertFalse(writer.update(readonly, "old", "edited"))
         assertEquals("old", dao.get(readonly)!!.content)
 
         val deleted = stored(SyncState.DELETED)
-        assertFalse(writer.update(deleted, "edited"))
+        assertFalse(writer.update(deleted, "old", "edited"))
         assertEquals("old", dao.get(deleted)!!.content)
 
-        assertFalse(writer.update(404, "edited"))
+        assertFalse(writer.update(404, "old", "edited"))
     }
 }

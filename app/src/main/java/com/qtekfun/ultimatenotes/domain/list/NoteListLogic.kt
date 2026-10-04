@@ -15,11 +15,11 @@ private const val RECENT_DAYS = 7L
 private const val MONTH_DAYS = 30L
 private const val PREVIEW_LENGTH = 160
 
-/** Maps a stored note to its row. The title comes from the text, as the editor shows it. */
+/** Maps a stored note to its row: the stored title, and the body minus a first line repeating it. */
 fun NoteEntity.toListItem(): NoteListItem = NoteListItem(
     localId = localId,
-    title = NoteSummary.title(content).ifEmpty { title },
-    preview = NoteSummary.preview(content, PREVIEW_LENGTH),
+    title = title,
+    preview = NoteSummary.preview(content, title, PREVIEW_LENGTH),
     category = category,
     favorite = favorite,
     modified = Instant.ofEpochSecond(modified)

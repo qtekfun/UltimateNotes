@@ -43,6 +43,7 @@ class EditorTest {
                 EditorContent(
                     state = EditorUiState(loaded = true, readOnly = readOnly, category = "Work"),
                     text = state,
+                    title = TextFieldState(),
                     isNew = false,
                     actions = actions
                 )

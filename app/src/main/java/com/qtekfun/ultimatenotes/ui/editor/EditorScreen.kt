@@ -5,8 +5,11 @@ package com.qtekfun.ultimatenotes.ui.editor
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
@@ -34,15 +37,18 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -55,8 +61,8 @@ import com.qtekfun.ultimatenotes.ui.main.MoveDialog
 import kotlinx.coroutines.launch
 
 /**
- * The note editor: a single text field whose content is the Markdown source, drawn with styles,
- * with a formatting bar above the keyboard. Back (or leaving the app) saves; a note that was
+ * The note editor: a title line and, below it, a single text field whose content is the Markdown
+ * source, drawn with styles, with a formatting bar above the keyboard. Back (or leaving the app) saves; a note that was
  * opened as new and left blank is discarded.
  *
  * @param noteId the note's local id, or [NEW_NOTE_ID].
@@ -85,6 +91,7 @@ fun EditorScreen(
     EditorContent(
         state = state,
         text = viewModel.text,
+        title = viewModel.title,
         isNew = noteId == NEW_NOTE_ID,
         actions = EditorActions(
             onBack = leave,
@@ -108,6 +115,7 @@ fun EditorScreen(
 fun EditorContent(
     state: EditorUiState,
     text: TextFieldState,
+    title: TextFieldState,
     isNew: Boolean,
     actions: EditorActions,
     modifier: Modifier = Modifier
@@ -144,7 +152,10 @@ fun EditorContent(
                     modifier = Modifier.padding(horizontal = TEXT_PADDING, vertical = 8.dp)
                 )
             }
-            if (state.loaded) NoteTextField(text, editable, requestFocus = isNew)
+            if (state.loaded) {
+                NoteTitleField(title, editable)
+                NoteTextField(text, editable, requestFocus = isNew)
+            }
         }
     }
     if (moving) {
@@ -217,6 +228,44 @@ private fun OverflowMenu(state: EditorUiState, actions: EditorActions, onMove: (
     }
 }
 
+/** The note's title: one line above the body; Enter moves on to the body. */
+@Composable
+private fun NoteTitleField(title: TextFieldState, editable: Boolean) {
+    val colors = MaterialTheme.colorScheme
+    val focusManager = LocalFocusManager.current
+    val fieldDescription = stringResource(R.string.editor_title_field)
+    val hint = stringResource(R.string.editor_title_hint)
+    BasicTextField(
+        state = title,
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = MIN_TOUCH_TARGET)
+            .semantics { contentDescription = fieldDescription }
+            .padding(start = TEXT_PADDING, end = TEXT_PADDING, top = TEXT_PADDING),
+        readOnly = !editable,
+        textStyle = MaterialTheme.typography.headlineSmall.copy(color = colors.onSurface),
+        keyboardOptions = KeyboardOptions(
+            capitalization = KeyboardCapitalization.Sentences,
+            imeAction = ImeAction.Next
+        ),
+        onKeyboardAction = { focusManager.moveFocus(FocusDirection.Down) },
+        lineLimits = TextFieldLineLimits.SingleLine,
+        cursorBrush = SolidColor(colors.primary),
+        decorator = { inner ->
+            Box {
+                if (title.text.isEmpty()) {
+                    Text(
+                        hint,
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = colors.onSurfaceVariant.copy(alpha = HINT_ALPHA)
+                    )
+                }
+                inner()
+            }
+        }
+    )
+}
+
 @Composable
 private fun NoteTextField(text: TextFieldState, editable: Boolean, requestFocus: Boolean) {
     val colors = MaterialTheme.colorScheme
@@ -278,6 +327,8 @@ private class LayoutHolder {
 private const val MARKER_ALPHA = 0.6f
 private const val CODE_ALPHA = 0.6f
 private const val DONE_ALPHA = 0.55f
+private const val HINT_ALPHA = 0.7f
+private val MIN_TOUCH_TARGET = 48.dp
 internal val TEXT_PADDING = 16.dp
 
 /** What the editor screen asks for. */

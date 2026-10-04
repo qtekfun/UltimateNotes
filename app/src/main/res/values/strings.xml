@@ -129,6 +129,9 @@
     <string name="editor_more">More options</string>
     <string name="editor_readonly">This note is read-only.</string>
     <string name="editor_toggle_checkbox">Toggle checklist item</string>
+    <string name="editor_title_field">Note title</string>
+    <string name="editor_title_hint">Title</string>
+    <string name="note_new_title">New note</string>
     <string name="editor_text_field">Note text</string>
     <string name="format_toolbar">Formatting</string>
     <string name="format_bold">Bold</string>

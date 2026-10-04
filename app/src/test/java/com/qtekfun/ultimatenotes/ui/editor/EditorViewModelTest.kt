@@ -66,7 +66,7 @@ class EditorViewModelTest {
         database.close()
     }
 
-    private val writer = spyk(NoteWriter(dao, clock))
+    private val writer = spyk(NoteWriter(dao, clock) { "New note" })
 
     private fun TestScope.model() = EditorViewModel(
         dao,
@@ -80,14 +80,15 @@ class EditorViewModelTest {
     private suspend fun synced(
         content: String = "hello",
         readonly: Boolean = false,
-        category: String = "Work"
+        category: String = "Work",
+        title: String = "t"
     ) = dao.insert(
         NoteEntity(
             id = nextRemoteId++,
             etag = "e",
             readonly = readonly,
             modified = 100,
-            title = "t",
+            title = title,
             category = category,
             content = content,
             syncState = SyncState.SYNCED,
@@ -104,6 +105,13 @@ class EditorViewModelTest {
     private fun EditorViewModel.type(value: String) {
         text.edit { replace(0, length, value) }
         Snapshot.sendApplyNotifications()
+    }
+
+    /** What typing in the title line does. */
+    private fun TestScope.typeTitle(model: EditorViewModel, value: String) {
+        model.title.edit { replace(0, length, value) }
+        Snapshot.sendApplyNotifications()
+        runCurrent()
     }
 
     private suspend fun all() = dao.observeAll().first()
@@ -140,7 +148,9 @@ class EditorViewModelTest {
         val model = model()
         model.openAndWait(id)
         assertEquals("# Title\nbody", model.text.text.toString())
+        assertEquals("t", model.title.text.toString())
         assertFalse(model.text.undoState.canUndo)
+        assertFalse(model.title.undoState.canUndo)
         val state = model.state.first { it.loaded }
         assertEquals("Work", state.category)
         assertFalse(state.readOnly)
@@ -176,13 +186,13 @@ class EditorViewModelTest {
         typeInto(model, "hello w")
         advanceTimeBy(900)
         // Not a suspending read: waiting on the database would let the test clock run on.
-        coVerify(exactly = 0) { writer.update(any(), any()) }
+        coVerify(exactly = 0) { writer.update(any(), any(), any()) }
         typeInto(model, "hello world")
         advanceTimeBy(900)
-        coVerify(exactly = 0) { writer.update(any(), any()) }
+        coVerify(exactly = 0) { writer.update(any(), any(), any()) }
         advanceTimeBy(200)
         eventually("hello world") { dao.get(id)!!.content }
-        coVerify(exactly = 1) { writer.update(id, "hello world") }
+        coVerify(exactly = 1) { writer.update(id, "t", "hello world") }
         assertEquals(SyncState.DIRTY, dao.get(id)!!.syncState)
         model.close()
         settle()
@@ -223,12 +233,147 @@ class EditorViewModelTest {
         val note = all().single()
         assertEquals("Work/Ideas", note.category)
         assertEquals("Idea", note.title)
+        // The user sees the title the note was given.
+        assertEquals("Idea", model.title.text.toString())
         assertEquals(SyncState.NEW, note.syncState)
         typeInto(model, "# Idea\nsome more text")
         advanceTimeBy(1_100)
         eventually("# Idea\nsome more text") { all().single().content }
         model.close()
         settle()
+    }
+
+    @Test
+    fun `a new note keeps the title derived at creation when the body changes later`() = runTest {
+        val model = model()
+        model.openAndWait(NEW_NOTE_ID)
+        typeInto(model, "First idea\nmore")
+        advanceTimeBy(1_100)
+        eventually(1) { all().size }
+        typeInto(model, "Rewritten opening\nmore")
+        advanceTimeBy(1_100)
+        eventually("Rewritten opening\nmore") { all().single().content }
+        assertEquals("First idea", all().single().title)
+        assertEquals("First idea", model.title.text.toString())
+        model.close()
+        settle()
+    }
+
+    @Test
+    fun `a title typed on a new note is used as is and saved with it`() = runTest {
+        val model = model()
+        model.openAndWait(NEW_NOTE_ID)
+        typeTitle(model, "Groceries")
+        typeInto(model, "Milk\neggs")
+        model.close()
+        settle()
+        val note = all().single()
+        assertEquals("Groceries", note.title)
+        assertEquals("Milk\neggs", note.content)
+        assertEquals("Groceries", model.title.text.toString())
+    }
+
+    @Test
+    fun `a new note with a title but no body is created`() = runTest {
+        val model = model()
+        model.openAndWait(NEW_NOTE_ID)
+        typeTitle(model, "Ideas")
+        model.close()
+        settle()
+        assertEquals("Ideas", all().single().title)
+        assertEquals(1, syncs)
+    }
+
+    @Test
+    fun `a new note whose body has no words gets the default title`() = runTest {
+        val model = model()
+        model.openAndWait(NEW_NOTE_ID)
+        typeInto(model, "-\n#")
+        model.close()
+        settle()
+        assertEquals("New note", all().single().title)
+    }
+
+    @Test
+    fun `renaming an existing note saves the title only, after the debounce`() = runTest {
+        val id = synced("body", title = "Old")
+        val model = model()
+        model.openAndWait(id)
+        typeTitle(model, "Renamed")
+        advanceTimeBy(900)
+        coVerify(exactly = 0) { writer.update(any(), any(), any()) }
+        advanceTimeBy(200)
+        eventually("Renamed") { dao.get(id)!!.title }
+        val note = dao.get(id)!!
+        assertEquals("body", note.content)
+        assertEquals(SyncState.DIRTY, note.syncState)
+        model.close()
+        settle()
+        assertEquals(1, syncs)
+    }
+
+    @Test
+    fun `editing the body of an existing note never re-derives its title`() = runTest {
+        val id = synced("Old first line\nrest", title = "Chosen")
+        val model = model()
+        model.openAndWait(id)
+        typeInto(model, "New first line\nrest")
+        model.close()
+        settle()
+        assertEquals("Chosen", dao.get(id)!!.title)
+        assertEquals("New first line\nrest", dao.get(id)!!.content)
+    }
+
+    @Test
+    fun `a title cleared on an existing note is not stored as blank`() = runTest {
+        val id = synced("body", title = "Keep me")
+        val model = model()
+        model.openAndWait(id)
+        typeTitle(model, "")
+        model.close()
+        settle()
+        assertEquals("Keep me", dao.get(id)!!.title)
+        assertEquals(SyncState.SYNCED, dao.get(id)!!.syncState)
+    }
+
+    @Test
+    fun `the title has its own undo history`() = runTest {
+        val id = synced("body", title = "Old")
+        val model = model()
+        model.openAndWait(id)
+        typeTitle(model, "Renamed")
+        assertTrue(model.title.undoState.canUndo)
+        model.title.undoState.undo()
+        assertEquals("Old", model.title.text.toString())
+        assertFalse(model.text.undoState.canUndo)
+        model.close()
+        settle()
+    }
+
+    @Test
+    fun `a new note whose title the user typed survives an emptied body`() = runTest {
+        val model = model()
+        model.openAndWait(NEW_NOTE_ID)
+        typeTitle(model, "Mine")
+        typeInto(model, "oops")
+        advanceTimeBy(1_100)
+        eventually(1) { all().size }
+        typeInto(model, "")
+        model.close()
+        settle()
+        assertEquals("Mine", all().single().title)
+    }
+
+    @Test
+    fun `read-only notes cannot be retitled`() = runTest {
+        val id = synced("fixed", readonly = true, title = "Locked")
+        val model = model()
+        model.openAndWait(id)
+        typeTitle(model, "Changed")
+        model.close()
+        settle()
+        assertEquals("Locked", dao.get(id)!!.title)
+        assertEquals(0, syncs)
     }
 
     @Test

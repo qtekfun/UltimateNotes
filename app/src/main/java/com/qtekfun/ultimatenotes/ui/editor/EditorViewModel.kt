@@ -53,9 +53,11 @@ data class EditorUiState(
 )
 
 /**
- * One editing session at a time. The text lives in [text]: its content *is* the note's Markdown,
- * so what is saved is exactly what is shown. Changes are saved ~1 s after the last keystroke and
- * when the session ends; a new note is only created once it has something in it.
+ * One editing session at a time. The body lives in [text]: its content *is* the note's Markdown,
+ * so what is saved is exactly what is shown. The note's title lives in [title], a single line of
+ * its own (it is not part of the Markdown). Changes to either are saved ~1 s after the last
+ * keystroke and when the session ends; a new note is only created once it has something in it.
+ * A new note left untitled gets its title once, when it is created (see [NoteWriter.create]).
  */
 @HiltViewModel
 @Suppress("LongParameterList", "TooManyFunctions")
@@ -70,11 +72,18 @@ class EditorViewModel @Inject constructor(
     /** The note being edited, as the session sees it. [noteId] is null until a new note is created. */
     private class Session(var noteId: Long?, val key: Long, val readOnly: Boolean) {
         var lastSaved: String = ""
+        var lastTitle: String = ""
         var created = false
+
+        /** The title was filled in by the app at creation and the user has not touched it since. */
+        var autoTitled = false
         var wrote = false
     }
 
     val text = TextFieldState()
+
+    /** The title field above the body; one line. */
+    val title = TextFieldState()
 
     private var session: Session? = null
     private var autosave: Job? = null
@@ -94,7 +103,7 @@ class EditorViewModel @Inject constructor(
      */
     fun open(noteId: Long, category: String = "") {
         if (session?.key == noteId) return
-        session?.let { finish(it, text.text.toString()) }
+        session?.let { finish(it, text.text.toString(), title.text.toString()) }
         autosave?.cancel()
         session = null
         meta.value = EditorUiState()
@@ -103,7 +112,7 @@ class EditorViewModel @Inject constructor(
 
     private suspend fun load(noteId: Long, category: String) {
         if (noteId == NEW_NOTE_ID) {
-            start(Session(null, noteId, readOnly = false), "")
+            start(Session(null, noteId, readOnly = false), "", "")
             meta.value = EditorUiState(loaded = true, category = category)
             return
         }
@@ -112,7 +121,7 @@ class EditorViewModel @Inject constructor(
             meta.value = EditorUiState(loaded = true, missing = true)
             return
         }
-        start(Session(note.localId, noteId, note.readonly), note.content)
+        start(Session(note.localId, noteId, note.readonly), note.content, note.title)
         meta.value = EditorUiState(
             loaded = true,
             readOnly = note.readonly,
@@ -122,16 +131,22 @@ class EditorViewModel @Inject constructor(
     }
 
     @OptIn(FlowPreview::class, ExperimentalFoundationApi::class)
-    private fun start(opened: Session, content: String) {
+    private fun start(opened: Session, content: String, noteTitle: String) {
         opened.lastSaved = content
+        opened.lastTitle = noteTitle
         text.edit {
             replace(0, length, content)
             selection = FieldRange(0)
         }
         text.undoState.clearHistory()
+        title.edit {
+            replace(0, length, noteTitle)
+            selection = FieldRange(length)
+        }
+        title.undoState.clearHistory()
         session = opened
         autosave = appScope.launch {
-            snapshotFlow { text.text.toString() }
+            snapshotFlow { text.text.toString() to title.text.toString() }
                 .distinctUntilChanged()
                 .debounce(AUTOSAVE_DELAY)
                 .collect { saveNow() }
@@ -147,7 +162,7 @@ class EditorViewModel @Inject constructor(
     /** Saves the text now (the screen calls this when it stops, since the process may die then). */
     suspend fun saveNow() {
         val current = session ?: return
-        persist(current, text.text.toString())
+        persist(current, text.text.toString(), title.text.toString())
     }
 
     /** Saves on a scope that outlives the screen: for when the app is being stopped. */
@@ -160,7 +175,7 @@ class EditorViewModel @Inject constructor(
         val current = session ?: return
         autosave?.cancel()
         session = null
-        finish(current, text.text.toString())
+        finish(current, text.text.toString(), title.text.toString())
     }
 
     /**
@@ -172,7 +187,7 @@ class EditorViewModel @Inject constructor(
         val current = session ?: return null
         autosave?.cancel()
         session = null
-        persist(current, text.text.toString())
+        persist(current, text.text.toString(), title.text.toString())
         return current.noteId
     }
 
@@ -196,29 +211,51 @@ class EditorViewModel @Inject constructor(
         }
     }
 
-    private fun finish(ended: Session, content: String) {
+    private fun finish(ended: Session, content: String, noteTitle: String) {
         appScope.launch {
-            persist(ended, content)
+            persist(ended, content, noteTitle)
             val id = ended.noteId
-            if (ended.created && content.isBlank() && id != null) actions.delete(listOf(id))
+            val emptied = content.isBlank() && (noteTitle.isBlank() || ended.autoTitled)
+            if (ended.created && emptied && id != null) actions.delete(listOf(id))
             if (ended.wrote) syncTrigger.requestSync()
         }
     }
 
-    private suspend fun persist(target: Session, content: String) = saveLock.withLock {
-        if (target.readOnly || content == target.lastSaved) return@withLock
-        val id = target.noteId
-        if (id == null) {
-            val created = writer.create(content, meta.value.category, meta.value.favorite)
-            if (created != null) {
-                target.noteId = created
-                target.created = true
-                target.wrote = true
+    private suspend fun persist(target: Session, content: String, noteTitle: String) =
+        saveLock.withLock {
+            val unchanged = content == target.lastSaved && noteTitle == target.lastTitle
+            if (target.readOnly || unchanged) return@withLock
+            val id = target.noteId
+            if (id == null) {
+                create(target, content, noteTitle)
+            } else {
+                if (noteTitle != target.lastTitle) target.autoTitled = false
+                if (writer.update(id, noteTitle, content)) target.wrote = true
                 target.lastSaved = content
+                target.lastTitle = noteTitle
             }
-        } else {
-            if (writer.update(id, content)) target.wrote = true
-            target.lastSaved = content
+        }
+
+    @OptIn(ExperimentalFoundationApi::class)
+    private suspend fun create(target: Session, content: String, noteTitle: String) {
+        val created = writer.create(noteTitle, content, meta.value.category, meta.value.favorite)
+            ?: return
+        target.noteId = created.localId
+        target.created = true
+        target.wrote = true
+        target.lastSaved = content
+        target.lastTitle = noteTitle
+        if (noteTitle.isBlank()) {
+            // Show the title the note was given, unless the user has started typing one meanwhile.
+            target.autoTitled = true
+            target.lastTitle = created.title
+            if (title.text.isEmpty()) {
+                title.edit {
+                    replace(0, length, created.title)
+                    selection = FieldRange(length)
+                }
+                title.undoState.clearHistory()
+            }
         }
     }
 
