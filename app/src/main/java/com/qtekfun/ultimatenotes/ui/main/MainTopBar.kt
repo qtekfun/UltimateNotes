@@ -5,6 +5,12 @@ package com.qtekfun.ultimatenotes.ui.main
 
 import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
@@ -24,6 +30,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
@@ -33,6 +40,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
@@ -54,6 +62,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
@@ -70,6 +79,7 @@ import com.qtekfun.ultimatenotes.domain.folder.FolderNode
 import com.qtekfun.ultimatenotes.domain.folder.FolderOverview
 import com.qtekfun.ultimatenotes.domain.folder.FolderSelection
 import com.qtekfun.ultimatenotes.domain.list.NoteSortOrder
+import com.qtekfun.ultimatenotes.sync.work.SyncPhase
 import com.qtekfun.ultimatenotes.ui.theme.UltimateNotesTheme
 import kotlinx.coroutines.launch
 
@@ -113,12 +123,53 @@ fun MainTopBar(
             }
         },
         actions = {
-            if (state.selecting) SelectionActions(state, actions, onMove)
+            if (state.selecting) {
+                SelectionActions(state, actions, onMove)
+            } else {
+                SyncButton(state, actions.onRefresh)
+            }
             MoreMenu(state, actions)
         },
         scrollBehavior = scrollBehavior
     )
 }
+
+/** Forces a sync now: it turns while a pass runs and turns red when the last one failed. */
+@Composable
+private fun SyncButton(state: MainUiState, onSync: () -> Unit) {
+    val failed = state.sync.phase is SyncPhase.Error
+    val angle = if (state.syncing) {
+        val turning = rememberInfiniteTransition(label = "sync")
+        val turn by turning.animateFloat(
+            initialValue = 0f,
+            targetValue = 360f,
+            animationSpec = infiniteRepeatable(
+                tween(SPIN_MS, easing = LinearEasing),
+                RepeatMode.Restart
+            ),
+            label = "sync-angle"
+        )
+        turn
+    } else {
+        0f
+    }
+    IconButton(onClick = onSync, enabled = !state.syncing) {
+        Icon(
+            Icons.Default.Refresh,
+            contentDescription = stringResource(
+                when {
+                    state.syncing -> R.string.sync_in_progress
+                    failed -> R.string.sync_failed
+                    else -> R.string.sync_now
+                }
+            ),
+            tint = if (failed) MaterialTheme.colorScheme.error else LocalContentColor.current,
+            modifier = Modifier.rotate(angle)
+        )
+    }
+}
+
+private const val SPIN_MS = 1000
 
 @Composable
 private fun SelectionActions(state: MainUiState, actions: ListActions, onMove: () -> Unit) {

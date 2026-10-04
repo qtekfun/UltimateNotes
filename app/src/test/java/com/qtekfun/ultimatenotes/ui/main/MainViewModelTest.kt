@@ -16,6 +16,9 @@ import com.qtekfun.ultimatenotes.domain.list.NoteSection
 import com.qtekfun.ultimatenotes.domain.list.NoteSortOrder
 import com.qtekfun.ultimatenotes.domain.list.ObserveNotes
 import com.qtekfun.ultimatenotes.domain.sync.SyncTrigger
+import com.qtekfun.ultimatenotes.sync.work.FakeStatusStore
+import com.qtekfun.ultimatenotes.sync.work.SyncErrorKind
+import com.qtekfun.ultimatenotes.sync.work.SyncPhase
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
@@ -75,6 +78,7 @@ class MainViewModelTest {
     private val actions = mockk<NoteActions>(relaxed = true)
     private val preferences = FakePreferences()
     private val settings = SettingsRepository(preferences)
+    private val syncStatus = FakeStatusStore()
     private var syncs = 0
     private var syncGate: CompletableDeferred<Unit>? = null
     private val trigger = SyncTrigger {
@@ -94,6 +98,7 @@ class MainViewModelTest {
         actions,
         settings,
         trigger,
+        syncStatus,
         clock,
         backgroundScope
     )
@@ -392,5 +397,36 @@ class MainViewModelTest {
             assertFalse(awaitItem().refreshing)
         }
         assertEquals(1, syncs)
+    }
+
+    @Test
+    fun `a sync that runs in the background also shows as syncing and refreshing`() = runTest {
+        val model = model()
+        model.state.test {
+            val idle = expectMostRecentItem()
+            assertFalse(idle.syncing)
+            assertFalse(idle.refreshing)
+            syncStatus.markSyncing()
+            val running = awaitItem()
+            assertTrue(running.syncing)
+            assertTrue(running.refreshing)
+            syncStatus.markSynced(now)
+            val done = awaitItem()
+            assertFalse(done.syncing)
+            assertFalse(done.refreshing)
+            assertEquals(now, done.sync.lastSyncedAt)
+        }
+    }
+
+    @Test
+    fun `a failed sync is exposed until a later one succeeds`() = runTest {
+        val model = model()
+        model.state.test {
+            expectMostRecentItem()
+            syncStatus.markError(SyncErrorKind.OFFLINE)
+            val failed = awaitItem()
+            assertEquals(SyncPhase.Error(SyncErrorKind.OFFLINE), failed.sync.phase)
+            assertFalse(failed.syncing)
+        }
     }
 }
