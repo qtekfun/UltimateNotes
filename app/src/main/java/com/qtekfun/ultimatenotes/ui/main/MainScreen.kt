@@ -70,6 +70,9 @@ import com.qtekfun.ultimatenotes.domain.folder.FolderNode
 import com.qtekfun.ultimatenotes.domain.folder.FolderOverview
 import com.qtekfun.ultimatenotes.domain.folder.FolderSelection
 import com.qtekfun.ultimatenotes.domain.list.NoteSortOrder
+import com.qtekfun.ultimatenotes.ui.search.SearchActions
+import com.qtekfun.ultimatenotes.ui.search.SearchScreen
+import com.qtekfun.ultimatenotes.ui.search.SearchViewModel
 import com.qtekfun.ultimatenotes.ui.theme.UltimateNotesTheme
 import kotlinx.coroutines.launch
 
@@ -79,14 +82,18 @@ fun MainScreen(
     onOpenSettings: () -> Unit,
     onOpenNote: (Long) -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: MainViewModel = viewModel()
+    viewModel: MainViewModel = viewModel(),
+    searchViewModel: SearchViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val search by searchViewModel.state.collectAsStateWithLifecycle()
+    LaunchedEffect(state.selection) { searchViewModel.setListFolder(state.selection) }
     MainContent(
         state = state,
         onSelect = viewModel::select,
         onOpenSettings = onOpenSettings,
         onNewNote = { onOpenNote(NEW_NOTE_ID) },
+        onSearch = searchViewModel::open,
         modifier = modifier,
         actions = ListActions(
             onOpenNote = onOpenNote,
@@ -103,6 +110,18 @@ fun MainScreen(
             onSortOrder = viewModel::setSortOrder
         )
     )
+    if (search.active) {
+        SearchScreen(
+            state = search,
+            actions = SearchActions(
+                onQueryChange = searchViewModel::setQuery,
+                onScopeChange = searchViewModel::setScope,
+                onOpenNote = onOpenNote,
+                onClose = searchViewModel::close
+            ),
+            modifier = modifier
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -114,7 +133,8 @@ fun MainContent(
     onNewNote: () -> Unit,
     modifier: Modifier = Modifier,
     drawerState: DrawerState = rememberDrawerState(DrawerValue.Closed),
-    actions: ListActions = ListActions()
+    actions: ListActions = ListActions(),
+    onSearch: () -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
@@ -159,6 +179,7 @@ fun MainContent(
             if (!state.selecting) {
                 FloatingSearchBar(
                     onNewNote = onNewNote,
+                    onSearch = onSearch,
                     modifier = Modifier.align(Alignment.BottomCenter)
                 )
             }

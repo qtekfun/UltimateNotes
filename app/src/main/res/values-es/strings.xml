@@ -31,6 +31,13 @@
     <string name="main_empty">Aún no hay notas aquí.</string>
     <string name="search_placeholder">Buscar</string>
     <string name="search_field">Buscar notas</string>
+    <string name="search_close">Cerrar búsqueda</string>
+    <string name="search_clear">Borrar el texto de búsqueda</string>
+    <string name="search_scope_label">Buscar en</string>
+    <string name="search_scope_folder">En %1$s</string>
+    <string name="search_hint">Busca por título o texto.</string>
+    <string name="search_no_results">No se ha encontrado nada.</string>
+    <string name="search_no_results_hint">Prueba otras palabras o busca en todas las notas.</string>
     <string name="note_new">Nota nueva</string>
     <string name="settings_title">Ajustes</string>
     <string name="settings_back">Atrás</string>
