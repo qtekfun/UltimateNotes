@@ -3,7 +3,7 @@
   SPDX-FileCopyrightText: 2026 UltimateNotes contributors
   SPDX-License-Identifier: GPL-3.0-or-later
 -->
-<!-- A sheet of paper with three text lines: the app in one glance. -->
+<!-- A sheet of paper with three text lines and a pencil across its corner. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
@@ -11,10 +11,19 @@
     android:viewportHeight="108">
     <path
         android:fillColor="#FFFFFFFF"
-        android:pathData="M34,28h40a4,4 0,0 1,4 4v44a4,4 0,0 1,-4 4h-40a4,4 0,0 1,-4 -4v-44a4,4 0,0 1,4 -4z" />
+        android:pathData="M32,28H62A4,4 0 0 1 66,32V76A4,4 0 0 1 62,80H32A4,4 0 0 1 28,76V32A4,4 0 0 1 32,28Z" />
     <path
-        android:pathData="M40,44h28M40,54h28M40,64h16"
+        android:pathData="M36,44H58M36,54H58M36,64H46"
         android:strokeWidth="4"
-        android:strokeColor="#FF0B63CE"
+        android:strokeColor="#FFD9483B"
         android:strokeLineCap="round" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M52,68L63.5,63.5L83.5,43.5L76.5,36.5L56.5,56.5Z"
+        android:strokeWidth="3"
+        android:strokeColor="#FFD9483B"
+        android:strokeLineJoin="round" />
+    <path
+        android:fillColor="#59000000"
+        android:pathData="M52,68L63.5,63.5L56.5,56.5Z" />
 </vector>
