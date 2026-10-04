@@ -6,6 +6,7 @@ package com.qtekfun.ultimatenotes.data.local.dao
 import androidx.room3.Dao
 import androidx.room3.Insert
 import androidx.room3.Query
+import androidx.room3.Transaction
 import androidx.room3.Update
 import com.qtekfun.ultimatenotes.data.local.entity.NoteEntity
 import com.qtekfun.ultimatenotes.data.local.model.FolderCount
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.Flow
  * and put favorites first, then the most recently modified.
  */
 @Dao
+@Suppress("TooManyFunctions") // one query per list, plus the editor's transactional write
 interface NoteDao {
     @Query(
         "SELECT * FROM note WHERE syncState != 'DELETED' " +
@@ -69,4 +71,16 @@ interface NoteDao {
 
     @Query("DELETE FROM note WHERE localId = :localId")
     suspend fun delete(localId: Long)
+
+    /**
+     * Reads the note, lets [change] derive its new version and stores it, in one transaction, so
+     * a sync write landing in between is never overwritten with stale fields. [change] returns
+     * null to leave the note as it is. Returns whether a new version was stored.
+     */
+    @Transaction
+    suspend fun modify(localId: Long, change: (NoteEntity) -> NoteEntity?): Boolean {
+        val changed = get(localId)?.let(change)
+        if (changed != null) update(changed)
+        return changed != null
+    }
 }

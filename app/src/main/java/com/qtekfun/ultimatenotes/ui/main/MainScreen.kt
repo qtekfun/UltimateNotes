@@ -81,6 +81,7 @@ import kotlinx.coroutines.launch
 fun MainScreen(
     onOpenSettings: () -> Unit,
     onOpenNote: (Long) -> Unit,
+    onNewNote: (category: String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: MainViewModel = viewModel(),
     searchViewModel: SearchViewModel = viewModel()
@@ -92,7 +93,7 @@ fun MainScreen(
         state = state,
         onSelect = viewModel::select,
         onOpenSettings = onOpenSettings,
-        onNewNote = { onOpenNote(NEW_NOTE_ID) },
+        onNewNote = { onNewNote(state.selection.newNoteCategory()) },
         onSearch = searchViewModel::open,
         modifier = modifier,
         actions = ListActions(
@@ -123,6 +124,10 @@ fun MainScreen(
         )
     }
 }
+
+/** A new note goes in the folder being viewed; the other lists have no folder to offer. */
+private fun FolderSelection.newNoteCategory(): String =
+    (this as? FolderSelection.Folder)?.path.orEmpty()
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
