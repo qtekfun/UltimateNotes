@@ -52,7 +52,7 @@ android {
         targetSdk = 37
         versionCode = versionCodeOf(appVersion)
         versionName = appVersion
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.qtekfun.ultimatenotes.HiltTestRunner"
     }
 
     signingConfigs {
@@ -355,6 +355,11 @@ dependencies {
     androidTestImplementation(libs.sqlite.bundled)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.ext.junit)
+    // Store screenshots (ScreenshotTest): Hilt test bindings (Apache-2.0, same version as Hilt)
+    // and WorkManager's test driver so no real sync is scheduled (Apache-2.0).
+    androidTestImplementation(libs.hilt.android.testing)
+    kspAndroidTest(libs.hilt.compiler)
+    androidTestImplementation(libs.androidx.work.testing)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
