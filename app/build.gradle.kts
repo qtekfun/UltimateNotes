@@ -362,6 +362,8 @@ dependencies {
     androidTestImplementation(libs.androidx.work.testing)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    // Accessibility Test Framework checks (Apache-2.0, Google) for the a11y audit on a device.
+    androidTestImplementation(libs.androidx.compose.ui.test.accessibility)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
     testImplementation(platform(libs.junit.bom))
