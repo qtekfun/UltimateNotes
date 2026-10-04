@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 UltimateNotes contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<!-- A sheet of paper with three text lines: the app in one glance. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M34,28h40a4,4 0,0 1,4 4v44a4,4 0,0 1,-4 4h-40a4,4 0,0 1,-4 -4v-44a4,4 0,0 1,4 -4z" />
+    <path
+        android:pathData="M40,44h28M40,54h28M40,64h16"
+        android:strokeWidth="4"
+        android:strokeColor="#FF0B63CE"
+        android:strokeLineCap="round" />
+</vector>

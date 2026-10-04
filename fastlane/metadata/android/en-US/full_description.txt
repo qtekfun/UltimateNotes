@@ -1,0 +1,5 @@
+UltimateNotes is a notes app for your own <b>Nextcloud Notes</b> server, inspired by Apple Notes. It keeps working without a connection and syncs when it can.
+
+Free software (GPL-3.0-or-later). No Google services, no ads, no tracking: your data only goes to your own Nextcloud.
+
+Under construction: this is an early scaffold.
