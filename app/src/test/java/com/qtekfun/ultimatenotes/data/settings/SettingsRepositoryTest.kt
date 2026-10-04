@@ -49,10 +49,34 @@ class SettingsRepositoryTest {
     }
 
     @Test
+    fun `sync defaults to hourly on any network and changes are stored`() = runTest {
+        repository.settings.test {
+            val defaults = awaitItem()
+            assertEquals(SyncInterval.HOUR, defaults.syncInterval)
+            assertEquals(SyncNetwork.ANY, defaults.syncNetwork)
+            repository.setSyncInterval(SyncInterval.SIX_HOURS)
+            assertEquals(SyncInterval.SIX_HOURS, awaitItem().syncInterval)
+            repository.setSyncNetwork(SyncNetwork.UNMETERED)
+            assertEquals(SyncNetwork.UNMETERED, awaitItem().syncNetwork)
+        }
+    }
+
+    @Test
     fun `an unknown stored sort order falls back to modified`() = runTest {
         preferences.values["sort_order"] = "RANDOM"
         repository.settings.test {
             assertEquals(NoteSortOrder.MODIFIED, awaitItem().sortOrder)
+        }
+    }
+
+    @Test
+    fun `unknown stored sync values fall back to the defaults`() = runTest {
+        preferences.values["sync_interval"] = "EVERY_SECOND"
+        preferences.values["sync_network"] = "CARRIER_PIGEON"
+        repository.settings.test {
+            val settings = awaitItem()
+            assertEquals(SyncInterval.HOUR, settings.syncInterval)
+            assertEquals(SyncNetwork.ANY, settings.syncNetwork)
         }
     }
 

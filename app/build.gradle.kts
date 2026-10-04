@@ -305,6 +305,7 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     implementation(libs.hilt.android)
+    implementation(libs.androidx.work.runtime)
     ksp(libs.hilt.compiler)
 
     implementation(libs.retrofit)
@@ -338,6 +339,7 @@ dependencies {
     testRuntimeOnly(libs.junit.platform.launcher)
     testImplementation(libs.turbine)
     testImplementation(libs.mockk)
+    testImplementation(libs.androidx.work.testing)
     // Host JVM build of the bundled SQLite, so Room runs in local unit tests.
     testImplementation(libs.sqlite.bundled.jvm)
 }

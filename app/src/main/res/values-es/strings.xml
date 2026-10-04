@@ -94,4 +94,15 @@
     <string name="settings_sort">Ordenar notas por</string>
     <string name="editor_stub_title">Nota</string>
     <string name="editor_stub_message">El editor llegará pronto.</string>
+    <string name="settings_sync">Sincronización</string>
+    <string name="settings_sync_interval">Intervalo de sincronización</string>
+    <string name="sync_interval_off">Desactivado</string>
+    <string name="sync_interval_15m">Cada 15 minutos</string>
+    <string name="sync_interval_1h">Cada hora</string>
+    <string name="sync_interval_6h">Cada 6 horas</string>
+    <string name="settings_sync_network">Red</string>
+    <string name="sync_network_any">Cualquier red</string>
+    <string name="sync_network_unmetered">Solo redes sin límite de datos (Wi-Fi)</string>
+    <string name="sync_channel_name">Sincronización</string>
+    <string name="sync_notification_title">Sincronizando notas…</string>
 </resources>

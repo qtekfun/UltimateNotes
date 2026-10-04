@@ -13,5 +13,9 @@ data class AppSettings(
     /** Material You colors from the wallpaper (Android 12+). */
     val dynamicColor: Boolean = true,
     /** How the note list is ordered (SPEC §7); modification date by default. */
-    val sortOrder: NoteSortOrder = NoteSortOrder.MODIFIED
+    val sortOrder: NoteSortOrder = NoteSortOrder.MODIFIED,
+    /** How often the periodic background sync runs. */
+    val syncInterval: SyncInterval = SyncInterval.HOUR,
+    /** Connections the background syncs may use. */
+    val syncNetwork: SyncNetwork = SyncNetwork.ANY
 )

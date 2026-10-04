@@ -3,8 +3,6 @@
 
 package com.qtekfun.ultimatenotes.di
 
-import com.qtekfun.ultimatenotes.domain.sync.NoopSyncTrigger
-import com.qtekfun.ultimatenotes.domain.sync.SyncTrigger
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -36,8 +34,4 @@ object ListModule {
     @Provides
     @Named(LIST_DISPATCHER)
     fun listDispatcher(): CoroutineDispatcher = Dispatchers.Default
-
-    /** No-op until T08 provides the real trigger; it replaces this binding. */
-    @Provides
-    fun syncTrigger(): SyncTrigger = NoopSyncTrigger
 }
