@@ -154,7 +154,7 @@ class NotesClientTest {
         val request = server.takeRequest()
         assertEquals("PUT", request.method)
         assertEquals("/nextcloud/index.php/apps/notes/api/v1/notes/9", request.target)
-        assertEquals("e1", request.headers["If-Match"])
+        assertEquals("\"e1\"", request.headers["If-Match"])
     }
 
     @Test

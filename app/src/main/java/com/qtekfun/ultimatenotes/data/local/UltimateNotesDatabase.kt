@@ -9,6 +9,7 @@ import androidx.room3.migration.Migration
 import com.qtekfun.ultimatenotes.data.local.dao.NoteDao
 import com.qtekfun.ultimatenotes.data.local.dao.NoteSearchDao
 import com.qtekfun.ultimatenotes.data.local.dao.NoteSyncDao
+import com.qtekfun.ultimatenotes.data.local.dao.NoteSyncWriteDao
 import com.qtekfun.ultimatenotes.data.local.entity.NoteEntity
 import com.qtekfun.ultimatenotes.data.local.entity.NoteFtsEntity
 
@@ -34,4 +35,6 @@ abstract class UltimateNotesDatabase : RoomDatabase() {
     abstract fun noteSearchDao(): NoteSearchDao
 
     abstract fun noteSyncDao(): NoteSyncDao
+
+    abstract fun noteSyncWriteDao(): NoteSyncWriteDao
 }
