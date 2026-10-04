@@ -5,6 +5,7 @@ package com.qtekfun.ultimatenotes.data.settings
 
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.qtekfun.ultimatenotes.domain.list.NoteSortOrder
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 private const val KEY_THEME = "theme"
 private const val KEY_AMOLED = "amoled"
 private const val KEY_DYNAMIC_COLOR = "dynamic_color"
+private const val KEY_SORT_ORDER = "sort_order"
 
 /**
  * Per-device preferences. They are not note data, so they live in SharedPreferences rather than
@@ -41,13 +43,19 @@ class SettingsRepository @Inject constructor(
 
     fun setDynamicColor(on: Boolean) = preferences.edit { putBoolean(KEY_DYNAMIC_COLOR, on) }
 
+    fun setSortOrder(order: NoteSortOrder) =
+        preferences.edit { putString(KEY_SORT_ORDER, order.name) }
+
     private fun read(): AppSettings {
         val defaults = AppSettings()
         val theme = preferences.getString(KEY_THEME, null)
+        val sortOrder = preferences.getString(KEY_SORT_ORDER, null)
         return AppSettings(
             theme = ThemeMode.entries.firstOrNull { it.name == theme } ?: defaults.theme,
             amoled = preferences.getBoolean(KEY_AMOLED, defaults.amoled),
-            dynamicColor = preferences.getBoolean(KEY_DYNAMIC_COLOR, defaults.dynamicColor)
+            dynamicColor = preferences.getBoolean(KEY_DYNAMIC_COLOR, defaults.dynamicColor),
+            sortOrder = NoteSortOrder.entries.firstOrNull { it.name == sortOrder }
+                ?: defaults.sortOrder
         )
     }
 
