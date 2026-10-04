@@ -19,11 +19,14 @@ class NotesClientFactory @Inject constructor(
 ) {
     /** [serverUrl] is the Nextcloud root, e.g. `https://cloud.example.org` or `.../nextcloud`. */
     fun create(serverUrl: String, httpClient: OkHttpClient = OkHttpClient()): NotesClient {
+        val baseUrl = baseUrl(serverUrl)
         val client = httpClient.newBuilder()
-            .addInterceptor(BasicAuthInterceptor(credentials))
+            .addInterceptor(BasicAuthInterceptor(credentials, baseUrl.toHttpUrl().host))
+            // Never follow an https -> http redirect: it would downgrade the connection.
+            .followSslRedirects(false)
             .build()
         val retrofit = Retrofit.Builder()
-            .baseUrl(baseUrl(serverUrl))
+            .baseUrl(baseUrl)
             .client(client)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()

@@ -11,11 +11,17 @@ import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 
 /**
- * Adds HTTP Basic auth from the [CredentialsProvider]. With no signed-in account the request is
- * not sent: a local 401 is returned instead, so the caller sees [ApiError.Unauthorized].
+ * Adds HTTP Basic auth from the [CredentialsProvider], but only to requests for the account's own
+ * [host]: the app password is never attached to a request for any other server. With no signed-in
+ * account the request is not sent: a local 401 is returned instead, so the caller sees
+ * [ApiError.Unauthorized].
  */
-class BasicAuthInterceptor(private val provider: CredentialsProvider) : Interceptor {
+class BasicAuthInterceptor(private val provider: CredentialsProvider, private val host: String) :
+    Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
+        if (!chain.request().url.host.equals(host, ignoreCase = true)) {
+            return chain.proceed(chain.request().newBuilder().removeHeader("Authorization").build())
+        }
         val credentials = provider.credentials() ?: return noAccount(chain.request())
         val request = chain.request().newBuilder()
             .header(
