@@ -24,7 +24,7 @@ Builds:
     gradle:
       - yes
 
-AllowedAPKSigningKeys: TODO-sha256-of-the-release-certificate-lowercase-hex
+AllowedAPKSigningKeys: ff6c625b57fea61d61dc1d1dacaabf92a1095dfdc9ce3cf80d9f10df72d7fdb6
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags ^v[0-9]+\.[0-9]+\.[0-9]+$
