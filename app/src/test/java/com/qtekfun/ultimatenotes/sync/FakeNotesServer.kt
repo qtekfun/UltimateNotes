@@ -125,6 +125,11 @@ class FakeNotesServer : NotesApi {
 
     fun edit(id: Long, content: String) = change(id) { it.copy(content = content) }
 
+    /** The note moved to another folder by another client. */
+    fun move(id: Long, category: String) = change(id) { it.copy(category = category) }
+
+    fun favorite(id: Long, favorite: Boolean) = change(id) { it.copy(favorite = favorite) }
+
     /** The title changed by another client (the web UI's rename). */
     fun retitle(id: Long, title: String) =
         change(id) { it.copy(title = uniqueTitle(id, it.category, title)) }

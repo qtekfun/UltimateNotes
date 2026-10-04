@@ -3,9 +3,11 @@
 
 package com.qtekfun.ultimatenotes.data.local.entity
 
+import androidx.room3.Embedded
 import androidx.room3.Entity
 import androidx.room3.Index
 import androidx.room3.PrimaryKey
+import com.qtekfun.ultimatenotes.data.local.model.NoteBase
 import com.qtekfun.ultimatenotes.data.local.model.SyncState
 
 /**
@@ -14,7 +16,8 @@ import com.qtekfun.ultimatenotes.data.local.model.SyncState
  * [localId] is the stable local key. [id] is the server id, null until a NEW note is uploaded.
  * [modified] is in epoch seconds, as the API sends it. [category] is the folder, with `/` for
  * subfolders; empty means no folder. [lastSyncedEtag] is the ETag of the server version this copy
- * was last in sync with, null if never synced.
+ * was last in sync with, null if never synced. [base] is what the server held for the mergeable
+ * fields at that moment, the ancestor of the three-way merge; null when unknown (ADR 0011).
  */
 @Entity(
     tableName = "note",
@@ -31,7 +34,8 @@ data class NoteEntity(
     val content: String = "",
     val favorite: Boolean = false,
     val syncState: SyncState = SyncState.NEW,
-    val lastSyncedEtag: String? = null
+    val lastSyncedEtag: String? = null,
+    @Embedded val base: NoteBase? = null
 ) {
     /** Never prints the title, folder or text of the note (privacy: nothing of a note is logged). */
     override fun toString(): String =

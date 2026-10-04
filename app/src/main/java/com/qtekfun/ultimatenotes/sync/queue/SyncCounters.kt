@@ -26,4 +26,4 @@ internal class SyncCounters {
 
 /** The note as a fresh local creation: the server no longer knows it, its text still matters. */
 internal fun NoteEntity.asNew() =
-    copy(id = null, etag = "", lastSyncedEtag = null, syncState = SyncState.NEW)
+    copy(id = null, etag = "", lastSyncedEtag = null, base = null, syncState = SyncState.NEW)

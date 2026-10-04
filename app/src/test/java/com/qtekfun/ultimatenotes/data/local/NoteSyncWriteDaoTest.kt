@@ -4,6 +4,7 @@
 package com.qtekfun.ultimatenotes.data.local
 
 import com.qtekfun.ultimatenotes.data.local.entity.NoteEntity
+import com.qtekfun.ultimatenotes.data.local.model.NoteBase
 import com.qtekfun.ultimatenotes.data.local.model.SyncState
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
@@ -113,5 +114,39 @@ class NoteSyncWriteDaoTest {
             dao.completePush(pushed, id = 3, etag = "e2", title = "")
 
             assertEquals("mine", checkNotNull(dao.get(pushed.localId)).title)
+        }
+
+    @Test
+    fun `a completed push stores what the server now holds as the merge base`() = runBlocking {
+        val pushed = stored("text").let {
+            it.copy(title = "a/b", category = "Work", favorite = true).also { n -> dao.update(n) }
+        }
+
+        dao.completePush(pushed, id = 3, etag = "e2", title = "ab (2)")
+
+        assertEquals(
+            NoteBase.of("text", "ab (2)", "Work", true),
+            checkNotNull(dao.get(pushed.localId)).base
+        )
+    }
+
+    @Test
+    fun `the base is what was pushed even if the row was edited or deleted meanwhile`() =
+        runBlocking {
+            val pushed = stored("sent").let { it.copy(title = "t").also { n -> dao.update(n) } }
+            dao.update(pushed.copy(content = "typed while syncing", favorite = true))
+
+            dao.completePush(pushed, id = 3, etag = "e2", title = "t")
+
+            val edited = checkNotNull(dao.get(pushed.localId))
+            assertEquals(NoteBase.of("sent", "t", "", false), edited.base)
+            assertEquals("typed while syncing", edited.content)
+
+            dao.update(edited.copy(syncState = SyncState.DELETED))
+            dao.completePush(edited, id = 3, etag = "e3", title = "t")
+            assertEquals(
+                NoteBase.of("typed while syncing", "t", "", true),
+                checkNotNull(dao.get(pushed.localId)).base
+            )
         }
 }

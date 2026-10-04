@@ -21,13 +21,13 @@ import com.qtekfun.ultimatenotes.data.local.entity.NoteFtsEntity
 )
 abstract class UltimateNotesDatabase : RoomDatabase() {
     companion object {
-        const val VERSION = 2
+        const val VERSION = 3
 
         /**
          * Migrations from each released version to the next. There is no destructive fallback:
          * raising [VERSION] requires adding its migration here (checked by DatabaseSchemaTest).
          */
-        val MIGRATIONS: Array<Migration> = arrayOf(Migration1To2)
+        val MIGRATIONS: Array<Migration> = arrayOf(Migration1To2, Migration2To3)
     }
 
     abstract fun noteDao(): NoteDao

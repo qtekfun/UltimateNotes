@@ -351,13 +351,9 @@ class NextcloudE2eTest {
         assertTrue((a.mine() + b.mine()).all { it.syncState == SyncState.SYNCED })
     }
 
-    /**
-     * Known limitation (docs/decisions/0004-e2e.md): the engine keeps no base text, so a favorite
-     * or folder change racing a remote edit of the same note counts as a text conflict. Nothing
-     * is lost, but a copy of the unchanged text appears.
-     */
+    /** Three-way merge (docs/decisions/0011-merge-tres-vias.md): no conflict copy, nothing lost. */
     @Test
-    fun `a favorite racing a remote edit loses nothing and both clients converge`() = runBlocking {
+    fun `a favorite racing a remote edit merges both without a conflict copy`() = runBlocking {
         val a = client()
         val b = client()
         val shared = a.create("shared", title = "$PREFIX race")
@@ -366,18 +362,108 @@ class NextcloudE2eTest {
 
         a.edit(shared, "shared, edited by a")
         b.favorite(b.mine().single().localId, true)
+        settle(a, b)
+
+        val remote = onServer().single()
+        assertEquals("shared, edited by a", remote.content)
+        assertTrue(remote.favorite)
+        assertEquals("$PREFIX race", remote.title)
+        assertConverged(a, b, 1)
+    }
+
+    @Test
+    fun `a folder move racing a remote edit merges both without a conflict copy`() = runBlocking {
+        val a = client()
+        val b = client()
+        val shared = a.create("shared", title = "$PREFIX move")
+        a.syncOk()
+        b.syncOk()
+
+        b.move(b.mine().single().localId, "$PREFIX-folder")
+        b.syncOk()
+        a.edit(shared, "shared, edited by a")
+        settle(a, b)
+
+        val remote = onServer().single()
+        assertEquals("shared, edited by a", remote.content)
+        assertEquals("$PREFIX-folder", remote.category)
+        assertConverged(a, b, 1)
+    }
+
+    @Test
+    fun `a rename racing a remote text edit merges both without a conflict copy`() = runBlocking {
+        val a = client()
+        val b = client()
+        val shared = a.create("shared", title = "$PREFIX before")
+        a.syncOk()
+        b.syncOk()
+
+        b.edit(b.mine().single().localId, "shared, edited by b")
+        b.syncOk()
+        a.retitle(shared, "$PREFIX after")
+        settle(a, b)
+
+        val remote = onServer().single()
+        assertEquals("shared, edited by b", remote.content)
+        assertEquals("$PREFIX after", remote.title)
+        assertConverged(a, b, 1)
+    }
+
+    @Test
+    fun `a favorite and a folder move on one client with an edit on the other all survive`() =
+        runBlocking {
+            val a = client()
+            val b = client()
+            val shared = a.create("shared", title = "$PREFIX all")
+            a.syncOk()
+            b.syncOk()
+
+            a.favorite(shared, true)
+            a.move(shared, "$PREFIX-moved")
+            b.edit(b.mine().single().localId, "shared, edited by b")
+            b.syncOk()
+            settle(a, b)
+
+            val remote = onServer().single()
+            assertEquals("shared, edited by b", remote.content)
+            assertTrue(remote.favorite)
+            assertEquals("$PREFIX-moved", remote.category)
+            assertConverged(a, b, 1)
+        }
+
+    @Test
+    fun `text edited on both sides still keeps both texts in a conflict copy`() = runBlocking {
+        val a = client()
+        val b = client()
+        val shared = a.create("shared", title = "$PREFIX clash")
+        a.syncOk()
+        b.syncOk()
+
+        a.edit(shared, "edited by a")
+        b.edit(b.mine().single().localId, "edited by b")
+        b.syncOk()
+        settle(a, b)
+
+        val remote = onServer()
+        assertEquals(setOf("edited by a", "edited by b"), remote.map { it.content }.toSet())
+        assertEquals(1, remote.count { it.title.contains("conflicto") })
+        assertConverged(a, b, 2)
+    }
+
+    private suspend fun settle(a: SyncFixture, b: SyncFixture) {
         repeat(2) {
             a.syncOk()
             b.syncOk()
         }
         a.syncOk()
+    }
 
-        val remote = onServer()
-        assertTrue(remote.any { it.content == "shared, edited by a" }, "the remote edit was lost")
-        assertTrue(remote.size <= 2, "more copies than the one conflict: ${remote.size}")
+    private suspend fun assertConverged(a: SyncFixture, b: SyncFixture, notes: Int) {
         fun List<NoteEntity>.view() = map { listOf(it.title, it.content, it.category, it.favorite) }
-        assertEquals(a.mine().view().toSet(), b.mine().view().toSet())
-        assertEquals(remote.size, a.mine().size)
+        val remote = onServer().map { listOf(it.title, it.content, it.category, it.favorite) }
+        assertEquals(notes, remote.size)
+        assertEquals(remote.toSet(), a.mine().view().toSet())
+        assertEquals(remote.toSet(), b.mine().view().toSet())
         assertTrue((a.mine() + b.mine()).all { it.syncState == SyncState.SYNCED })
     }
 

@@ -9,6 +9,7 @@ import androidx.room3.Query
 import androidx.room3.Transaction
 import androidx.room3.Update
 import com.qtekfun.ultimatenotes.data.local.entity.NoteEntity
+import com.qtekfun.ultimatenotes.data.local.model.NoteBase
 import com.qtekfun.ultimatenotes.data.local.model.SyncState
 
 /** Writes of the sync layer (T07), safe against the user editing while a sync is in flight. */
@@ -79,7 +80,15 @@ interface NoteSyncWriteDao {
     @Transaction
     suspend fun completePush(pushed: NoteEntity, id: Long, etag: String, title: String) {
         val current = get(pushed.localId) ?: return
-        val accepted = current.copy(id = id, etag = etag, lastSyncedEtag = etag)
+        val serverTitle = title.ifBlank { pushed.title }
+        // The server now holds what was pushed (under its own title): the new merge base, whatever
+        // the user did to the row meanwhile.
+        val accepted = current.copy(
+            id = id,
+            etag = etag,
+            lastSyncedEtag = etag,
+            base = NoteBase.of(pushed.content, serverTitle, pushed.category, pushed.favorite)
+        )
         val sameBody = current.title == pushed.title &&
             current.content == pushed.content &&
             current.category == pushed.category &&
@@ -89,7 +98,7 @@ interface NoteSyncWriteDao {
                 current.syncState == SyncState.DELETED -> accepted
 
                 sameBody -> accepted.copy(
-                    title = title.ifBlank { current.title },
+                    title = serverTitle,
                     syncState = SyncState.SYNCED
                 )
 

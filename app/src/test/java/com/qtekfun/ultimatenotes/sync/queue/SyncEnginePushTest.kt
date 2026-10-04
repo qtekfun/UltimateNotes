@@ -211,6 +211,33 @@ class SyncEnginePushTest {
         }
 
     @Test
+    fun `a rejected favorite meets a remote text edit and merges instead of forking`() =
+        runBlocking {
+            val a = server.put("Title\nserver body", category = "Work")
+            client.sync()
+            val id = client.byContent("Title\nserver body").localId
+            client.favorite(id, true)
+            server.onRequest = { if (it.startsWith("PUT")) server.edit(a, "Title\nother body") }
+
+            val report = success(client.sync())
+
+            assertEquals(0, report.forked)
+            assertEquals(0, report.pushed)
+            assertEquals(1, report.pulled)
+            val merged = checkNotNull(client.dao.get(id))
+            assertEquals("Title\nother body", merged.content)
+            assertTrue(merged.favorite)
+            assertEquals(SyncState.DIRTY, merged.syncState)
+            server.onRequest = {}
+
+            assertEquals(1, success(client.sync()).pushed)
+
+            assertEquals(1, client.all().size)
+            assertEquals(listOf(Triple("Title\nother body", "Work", true)), server.snapshot())
+            assertEquals(SyncState.SYNCED, checkNotNull(client.dao.get(id)).syncState)
+        }
+
+    @Test
     fun `a rejected edit with the same text adopts the etag and uploads the rest next`() =
         runBlocking {
             val a = server.put("A")

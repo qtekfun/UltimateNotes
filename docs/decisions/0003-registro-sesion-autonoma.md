@@ -44,8 +44,9 @@ con `git revert` del PR indicado.
 - `ObserveFoldersTest` falló dos veces en una máquina muy cargada y pasa solo; vigilar.
 - El pull inicial de 5 000 notas tarda ~8 s en JVM (una transacción por nota); puede ser peor en
   un teléfono. Sin tocar: el motor de sync exige 100 % de cobertura y no hay medición en dispositivo.
-- Limitación de sync: favorito/carpeta de un cliente contra edición de texto de otro deja una copia
-  "(conflicto …)" extra sin pérdida de texto (ADR 0004).
+- (Resuelta, ver ADR 0011) Limitación de sync: favorito/carpeta de un cliente contra edición de texto
+  de otro dejaba una copia "(conflicto …)" extra sin pérdida de texto (ADR 0004). Ahora se fusiona
+  campo a campo contra una base por nota.
 - Las instalaciones en el OPPO PGEM10 fallaron con `Failure [-99]` (confirmación de OPPO sin
   aceptar); nada se ha ejecutado en él.
 - La tablet Huawei (MRO-W09) conserva la app de depuración y el APK de tests instrumentados
