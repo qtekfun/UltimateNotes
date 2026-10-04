@@ -23,6 +23,8 @@ Dependencia nueva de test: `androidx.compose.ui:ui-test-junit4-accessibility` (A
 Verificado por semántica: todos los controles con clic tienen etiqueta, la carpeta actual se anuncia como seleccionada, los botones tienen rol, el botón deshabilitado se anuncia como tal, interruptores y filas de opción tienen estado y rol, y el campo de la nota ofrece la acción personalizada de marcar/desmarcar casilla. **NO se probó la voz real de TalkBack** (no se activó ningún servicio de accesibilidad): orden de lectura, frases y gestos siguen sin verificar.
 
 ## 4. Biblioteca de 5 000 notas (build debug, medianas; datos sintéticos de 0,2 a 20 KB, 30 carpetas, 2 % favoritas)
+**Hallazgo importante: regresión de rendimiento de la lista en master.** La tabla siguiente se midió sobre el código base de esta rama (antes de la fusión de las PR #28 a #32). Repetida tras rebasar sobre master (previsualización en texto plano de la PR #28, fusión a tres bandas y Room v3), el mapeo de la lista se disparó: `toListItem` + secciones pasa de 57 / 105 / 647 ms a **444 / 879 / 4 184 ms** (500 / 1 000 / 5 000 notas) y el lanzamiento hasta la primera fila con 5 000 notas pasa de 1,6 s a **5,4 s** (1,3 s y 1,7 s con 500 y 1 000). La búsqueda FTS sube a 24 / 43 / 180 ms de mediana (con el móvil posiblemente más cargado; no se repitió). Pull de 5 000: 3,0 s (sin cambio relevante). Conviene optimizar el cálculo de la vista previa antes de la 1.0 (por ejemplo, calcularla al guardar o solo para las filas visibles).
+
 | Medida | 500 | 1 000 | 5 000 |
 |---|---|---|---|
 | Lanzar actividad -> primera fila de la lista | 1,0 s | 1,06 s | **1,6 s** |
@@ -37,7 +39,7 @@ Verificado por semántica: todos los controles con clic tienen etiqueta, la carp
 | Segundo sync sin cambios | 6 ms | 1 ms | 4 ms |
 
 - El pull de 5 000 notas tarda 2,8 s en el móvil (frente a ~8 s en el PC compartido): **no hay motivo para agrupar transacciones por rendimiento**. No incluye red ni JSON (el servidor falso va en proceso). No se tocó el motor.
-- El arranque a lista con 5 000 notas (1,6 s en debug, sin contar el arranque del proceso) **no cumple todavía el objetivo de SPEC §10 (< 1 s)**, aunque debug es más lento que release. La lista lee todas las filas con su contenido completo y las mapea (150 ms + 650 ms con 5 000), y se repite en cada cambio de la base. Es el punto a optimizar (columna de vista previa o paginación) si se confirma en release.
+- El arranque a lista con 5 000 notas (1,6 s en debug antes del rebase, 5,4 s después, sin contar el arranque del proceso) **no cumple todavía el objetivo de SPEC §10 (< 1 s)**, aunque debug es más lento que release. La lista lee todas las filas con su contenido completo y las mapea (150 ms + 650 ms con 5 000), y se repite en cada cambio de la base. Es el punto a optimizar (columna de vista previa o paginación) si se confirma en release.
 - **Jank al desplazar: NO medido de forma fiable.** El inyector de gestos de Compose avanza a su propio ritmo (46 fotogramas con 65 % lentos, igual con 500 que con 5 000 notas: es del arnés). La inyección de eventos por `UiAutomation`, `dispatchTouchEvent` y `input swipe` no desplazó la lista en este móvil. Queda pendiente medir con un gesto real o con una build release.
 
 ## 5. Ciclo de vida (app real instalada, con la cuenta del usuario)
