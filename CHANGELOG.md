@@ -9,6 +9,10 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+## [0.1.0-rc.1] - 2026-10-04
+
+First release candidate. A pre-release: not offered on F-Droid.
+
 ### Added
 
 - Sign in with Nextcloud's Login Flow v2; the app password is encrypted with the Android Keystore.
