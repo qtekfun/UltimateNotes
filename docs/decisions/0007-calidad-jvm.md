@@ -37,7 +37,7 @@ quede ninguna corrutina activa en el scope del modelo (el límite de 5 s es solo
 privados de esa clase).
 
 Bucle de verificación, `./gradlew testDebugUnitTest --tests '*EditorViewModelTest*' --rerun`
-(clase entera, 31 tests, en un PC con carga media de 30 a 90, que es un entorno hostil):
+(clase entera, en un PC con carga media de 30 a 90, que es un entorno hostil):
 - solo con el arreglo B: 27/30 pasan (3 fallos, causa A);
 - con A y B: **30/30 pasan**.
 
@@ -49,14 +49,14 @@ de Markdown variado (títulos, casillas, citas, negritas) y notas de 50 KB.
 
 | Guarda | Medido (mediana) | Umbral |
 |---|---|---|
-| Lista: `toListItem` + `buildNoteGroups`, 5 000 notas | MED_LISTA | 2 000 ms |
-| Búsqueda FTS en Room en memoria, 5 000 notas (frase de 2 palabras) | MED_BUSQUEDA | 1 000 ms |
-| Análisis Markdown + estilos, nota de 50 KB | MED_MD | 1 000 ms |
-| Parser de checklist, nota de 50 KB | MED_CHECK | 500 ms |
-| Primer pull de 5 000 notas contra `FakeNotesServer` | MED_SYNC | 120 000 ms |
+| Lista: `toListItem` + `buildNoteGroups`, 5 000 notas | 80 ms | 2 000 ms |
+| Búsqueda FTS en Room en memoria, 5 000 notas (frase de 2 palabras) | 24 ms | 1 000 ms |
+| Análisis Markdown + estilos, nota de 50 KB | 5 ms | 1 000 ms |
+| Parser de checklist, nota de 50 KB | 0,7 ms | 500 ms |
+| Primer pull de 5 000 notas contra `FakeNotesServer` | 7 900 ms | 120 000 ms |
 
 **Aviso sobre las cifras**: se midieron en un PC compartido con otros agentes (carga media de
-30 a 90). Son una cota superior; el resultado en reposo es varias veces menor. Los umbrales
+30 a 120). Son una cota superior; en reposo es menor. Con la carga más alta salieron 146 ms (lista), 45 ms (búsqueda), 41 ms (Markdown), 5 ms (checklist) y 21 800 ms (sync). Los umbrales
 dejan más de 5x de margen incluso sobre estas cifras.
 
 Observaciones, sin cambiar código:
