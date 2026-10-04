@@ -15,6 +15,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.room)
     alias(libs.plugins.detekt)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.kover)
@@ -99,6 +100,11 @@ android {
         unitTests.all { it.useJUnitPlatform() }
     }
 
+    sourceSets {
+        // Exported Room schemas, read by MigrationTestHelper on the device.
+        getByName("androidTest").assets.directories.add("$projectDir/schemas")
+    }
+
     lint {
         warningsAsErrors = true
         abortOnError = true
@@ -115,6 +121,10 @@ kotlin {
         jvmTarget.set(JvmTarget.JVM_17)
         allWarningsAsErrors.set(true)
     }
+}
+
+room3 {
+    schemaDirectory("$projectDir/schemas")
 }
 
 detekt {
@@ -310,10 +320,20 @@ dependencies {
     implementation(libs.commonmark.ext.gfm.strikethrough)
     implementation(libs.commonmark.ext.gfm.tables)
 
+    implementation(libs.room.runtime)
+    ksp(libs.room.compiler)
+
+    // Migration tests run on a device (MigrationTestHelper); they are compiled but not run by check.
+    androidTestImplementation(libs.room.testing)
+    androidTestImplementation(libs.sqlite.bundled)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.ext.junit)
 
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
     testRuntimeOnly(libs.junit.platform.launcher)
+    testImplementation(libs.turbine)
+    testImplementation(libs.mockk)
+    // Host JVM build of the bundled SQLite, so Room runs in local unit tests.
+    testImplementation(libs.sqlite.bundled.jvm)
 }
