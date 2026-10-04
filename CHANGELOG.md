@@ -13,6 +13,7 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 - Sign in with Nextcloud's Login Flow v2; the app password is encrypted with the Android Keystore.
 - Offline-first sync with Nextcloud Notes (API v1): local database, operation queue with retries and backoff, ETags, periodic sync and pull to refresh. Conflicts never lose text: when both devices change the text (or title) of a note, the other version is kept as a copy; changes to different fields (text, title, folder, favorite) are merged without a copy.
+- Open links from the editor: an "Open link" button in the formatting bar when the caret is in a link, and a tap opens links in read-only notes. Only `https`, `http`, `mailto` and `tel` links are opened.
 - Notes list grouped by date with previews, favorites on top, folders and subfolders.
 - WYSIWYG Markdown editor with a separate title field, formatting bar, autosave, undo and redo; unsupported syntax is kept untouched.
 - Interactive checklists.

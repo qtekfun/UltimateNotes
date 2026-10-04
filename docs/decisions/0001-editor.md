@@ -92,7 +92,7 @@ rendimiento en JVM; lo que depende de pantalla real queda marcado como "pendient
 | API | `InputTransformation` (`ContinueListOnEnter`) intercepta el Enter y delega en `continueList`; `TextFieldBuffer.changes` y `undoState` son `@ExperimentalFoundationApi`. `TextFieldState` y `snapshotFlow` funcionan en tests JVM. |
 
 Decisión: se mantiene `BasicTextField` + `OutputTransformation` (no se activa el fallback de bloques).
-Límites conocidos de v1: los enlaces no se abren al tocarlos; las casillas no son nodos de accesibilidad
+Límites conocidos de v1: los enlaces no se abren al tocarlos en notas editables (en solo lectura y con el botón «Abrir enlace» sí, ver `0013-enlaces.md`); las casillas no son nodos de accesibilidad
 individuales (hay una acción personalizada "alternar elemento de la lista" en la línea del cursor);
 si la sincronización trae una versión remota de la nota mientras está abierta en el editor, al guardar
 gana el texto del editor (el motor de sync solo detecta el conflicto si el servidor cambia de nuevo);
