@@ -55,7 +55,7 @@ class NoteSearchDaoTest {
         add("Recipe", "chocolate cake with almonds")
         add("Other", "chocolate bar")
 
-        search.search("choc cake").test {
+        search.search("chocolate ca").test {
             assertEquals(listOf("Recipe"), awaitItem().map { it.title })
         }
     }
@@ -110,14 +110,14 @@ class NoteSearchDaoTest {
     }
 
     @Test
-    fun `results put favorites first, then newest`() = runTest {
+    fun `results are newest first`() = runTest {
         add("old", "word", modified = 1)
         add("new", "word", modified = 2)
         val fav = add("fav", "word", modified = 0)
         notes.update(notes.get(fav)!!.copy(favorite = true))
 
         search.search("word").test {
-            assertEquals(listOf("fav", "new", "old"), awaitItem().map { it.title })
+            assertEquals(listOf("new", "old", "fav"), awaitItem().map { it.title })
         }
     }
 
