@@ -1,5 +1,5 @@
 UltimateNotes is a notes app for your own <b>Nextcloud Notes</b> server, inspired by Apple Notes. It keeps working without a connection and syncs when it can.
 
-Free software (GPL-3.0-or-later). No Google services, no ads, no tracking: your data only goes to your own Nextcloud.
+Free software (GPL-3.0-or-later). No Google services, no ads, no analytics, no tracking: your notes only travel between your phone and your own Nextcloud server, always over HTTPS. The app password is stored encrypted with the Android Keystore, Android cloud backup is off, and note content is never logged. See PRIVACY.md in the repository for details.
 
 Under construction: this is an early scaffold.

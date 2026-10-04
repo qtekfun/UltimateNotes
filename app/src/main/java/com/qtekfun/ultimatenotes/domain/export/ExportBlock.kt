@@ -24,4 +24,7 @@ data class ExportBlock(
     val marker: String? = null,
     val indent: Int = 0,
     val quoteDepth: Int = 0
-)
+) {
+    /** Never prints the text of the note. */
+    override fun toString(): String = "ExportBlock(kind=$kind, textLength=${text.length})"
+}

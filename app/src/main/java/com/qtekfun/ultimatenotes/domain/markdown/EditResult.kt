@@ -7,6 +7,9 @@ import com.qtekfun.ultimatenotes.domain.TextRange
 
 /** The text after a formatting operation and where the selection ends up in it. */
 data class EditResult(val text: String, val selection: TextRange) {
+    /** Never prints the text of the note. */
+    override fun toString(): String = "EditResult(length=${text.length}, selection=$selection)"
+
     /**
      * The smallest single replacement that turns [original] into [text]. The editor applies this
      * instead of rewriting the whole document, so undo steps stay small and the caret is not
@@ -35,6 +38,10 @@ data class EditResult(val text: String, val selection: TextRange) {
 
 /** Replace [range] of the current text with [replacement], then select [selection] (in the new text). */
 data class TextEdit(val range: TextRange, val replacement: String, val selection: TextRange) {
+    /** Never prints the replacement, which is note text. */
+    override fun toString(): String =
+        "TextEdit(range=$range, replacementLength=${replacement.length}, selection=$selection)"
+
     fun applyTo(original: String): String =
         original.substring(0, range.start) + replacement + original.substring(range.end)
 }

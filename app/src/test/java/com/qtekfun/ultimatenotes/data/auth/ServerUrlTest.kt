@@ -35,7 +35,10 @@ class ServerUrlTest {
 
     @ParameterizedTest
     @ValueSource(
-        strings = ["", "   ", "https://", "ftp://cloud.example.com", "https://exa mple.com"]
+        strings = [
+            "", "   ", "https://", "ftp://cloud.example.com", "https://exa mple.com",
+            "https://alice:secret@cloud.example.com", "https://alice@cloud.example.com/nextcloud"
+        ]
     )
     fun `rejects malformed addresses`(input: String) {
         assertEquals(ServerUrl.ParseResult.Invalid, ServerUrl.parse(input))

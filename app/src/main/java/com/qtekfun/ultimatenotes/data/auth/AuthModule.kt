@@ -32,7 +32,7 @@ abstract class AuthModule {
     companion object {
         @Provides
         @Singleton
-        fun okHttpClient(): OkHttpClient = OkHttpClient()
+        fun okHttpClient(): OkHttpClient = OkHttpClient.Builder().followSslRedirects(false).build()
 
         @Provides
         fun json(): Json = NotesClientFactory.json

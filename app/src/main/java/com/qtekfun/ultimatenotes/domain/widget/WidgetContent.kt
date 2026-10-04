@@ -11,7 +11,10 @@ data class WidgetNote(
     /** One line of body text, already truncated. */
     val preview: String,
     val favorite: Boolean
-)
+) {
+    /** Never prints the title or preview of the note. */
+    override fun toString(): String = "WidgetNote(localId=$localId, content=<redacted>)"
+}
 
 /** What the widget shows. [Locked] and [SignedOut] carry no note data by construction. */
 sealed interface WidgetContent {

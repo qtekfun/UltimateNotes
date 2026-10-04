@@ -36,7 +36,12 @@ class ServerUrl private constructor(val root: HttpUrl) {
             val url = withScheme.toHttpUrlOrNull()
             return when {
                 url == null || url.host.isEmpty() -> ParseResult.Invalid
+
+                // `https://user:pass@host` would put credentials in every stored and printed URL.
+                url.username.isNotEmpty() || url.password.isNotEmpty() -> ParseResult.Invalid
+
                 !url.isHttps && !allowInsecure -> ParseResult.Insecure
+
                 else -> ParseResult.Valid(ServerUrl(rootOf(url)))
             }
         }

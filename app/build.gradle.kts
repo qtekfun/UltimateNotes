@@ -254,12 +254,11 @@ val checkForbiddenDependencies = tasks.register("checkForbiddenDependencies") {
     group = "verification"
     description =
         "Fails if a runtime classpath contains Google Play Services, Firebase or Crashlytics."
-    val forbiddenGroupPrefixes = listOf(
-        "com.google.android.gms",
-        "com.google.firebase",
-        "com.crashlytics",
-        "io.fabric"
-    )
+    // The list is shared with the PolicyFilesTest unit test.
+    val forbiddenGroupPrefixes = rootProject.file("config/security/forbidden-dependency-groups.txt")
+        .readLines()
+        .map { it.trim() }
+        .filter { it.isNotEmpty() && !it.startsWith("#") }
     val runtimeModules = listOf("debugRuntimeClasspath", "releaseRuntimeClasspath").map { name ->
         configurations.named(name).flatMap { it.incoming.resolutionResult.rootComponent }
     }

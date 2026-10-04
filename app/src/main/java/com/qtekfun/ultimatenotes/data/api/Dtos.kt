@@ -19,7 +19,10 @@ data class NoteDto(
     val category: String = "",
     val content: String? = null,
     val favorite: Boolean = false
-)
+) {
+    /** Never prints the title, folder or text of the note. */
+    override fun toString(): String = "NoteDto(id=$id, content=<redacted>)"
+}
 
 /** Read/write attributes sent on create and update; `null` fields are omitted (left unchanged). */
 @Serializable
@@ -29,7 +32,10 @@ data class NoteWriteDto(
     val content: String? = null,
     val favorite: Boolean? = null,
     val modified: Long? = null
-)
+) {
+    /** Never prints the title, folder or text of the note. */
+    override fun toString(): String = "NoteWriteDto(content=<redacted>)"
+}
 
 /** App settings (API >= 1.2). */
 @Serializable
