@@ -26,6 +26,7 @@ import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -37,6 +38,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 /** Id the list passes to open the editor on a note that does not exist yet. */
 const val NEW_NOTE_ID = -1L
@@ -221,7 +223,15 @@ class EditorViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Not cancellable: the autosave is cancelled when the session ends, and a write that reached the
+     * database must also reach the session's bookkeeping (`wrote`, `lastSaved`). Otherwise the final
+     * save finds nothing to change, reports "nothing written" and the sync is never requested.
+     */
     private suspend fun persist(target: Session, content: String, noteTitle: String) =
+        withContext(NonCancellable) { saveLocked(target, content, noteTitle) }
+
+    private suspend fun saveLocked(target: Session, content: String, noteTitle: String) =
         saveLock.withLock {
             val unchanged = content == target.lastSaved && noteTitle == target.lastTitle
             if (target.readOnly || unchanged) return@withLock

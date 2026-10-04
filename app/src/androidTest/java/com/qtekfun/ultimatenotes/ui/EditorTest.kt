@@ -6,6 +6,8 @@ package com.qtekfun.ultimatenotes.ui
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.click
@@ -16,11 +18,13 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.test.platform.app.InstrumentationRegistry
 import com.qtekfun.ultimatenotes.R
 import com.qtekfun.ultimatenotes.ui.editor.EditorActions
 import com.qtekfun.ultimatenotes.ui.editor.EditorContent
 import com.qtekfun.ultimatenotes.ui.editor.EditorUiState
+import com.qtekfun.ultimatenotes.ui.editor.TEXT_PADDING
 import com.qtekfun.ultimatenotes.ui.theme.UltimateNotesTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -81,12 +85,28 @@ class EditorTest {
     fun tappingACheckboxTogglesExactlyOneCharacterAndUndoRestoresIt() {
         val state = show("- [ ] milk\n- [x] eggs")
 
-        compose.onNodeWithContentDescription(text(R.string.editor_text_field))
-            .performTouchInput { click(Offset(CHECKBOX_X, CHECKBOX_Y)) }
+        val field = compose.onNodeWithContentDescription(text(R.string.editor_text_field))
+        val box = centerOfGlyph(field, state.text.indexOf('['))
+        field.performTouchInput { click(box) }
 
         assertEquals("- [x] milk\n- [x] eggs", state.text.toString())
         compose.onNodeWithContentDescription(text(R.string.undo)).performClick()
         assertEquals("- [ ] milk\n- [x] eggs", state.text.toString())
+    }
+
+    /**
+     * Where the glyph at [offset] is drawn, in the node's own coordinates, asked of the field's
+     * text layout (the same one the editor hit-tests with), so it does not depend on screen size,
+     * density or font scale. The field draws its text inside [TEXT_PADDING].
+     */
+    private fun centerOfGlyph(field: SemanticsNodeInteraction, offset: Int): Offset {
+        val layouts = mutableListOf<TextLayoutResult>()
+        val read = field.fetchSemanticsNode().config[SemanticsActions.GetTextLayoutResult]
+        check(read.action?.invoke(layouts) == true && layouts.isNotEmpty()) {
+            "the field exposes no text layout"
+        }
+        val padding = with(compose.density) { TEXT_PADDING.toPx() }
+        return layouts.first().getBoundingBox(offset).center + Offset(padding, padding)
     }
 
     @Test
@@ -134,11 +154,5 @@ class EditorTest {
         show("text", readOnly = true)
         compose.onNodeWithContentDescription(text(R.string.format_bold)).assertDoesNotExist()
         compose.onNodeWithText(text(R.string.editor_readonly)).assertIsDisplayed()
-    }
-
-    private companion object {
-        // Roughly where the first line's box glyph is: after the 16 dp padding and the "- ".
-        const val CHECKBOX_X = 60f
-        const val CHECKBOX_Y = 60f
     }
 }
