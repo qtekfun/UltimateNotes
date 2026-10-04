@@ -9,10 +9,12 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 `images/icon.png` (en-US) is the launcher icon, drawn from `app/src/main/res/drawable/ic_launcher_foreground.xml` and `values/ic_launcher_background.xml`. It is a simple placeholder (a sheet of paper on blue), not final branding. There is no feature graphic, as in the sister apps.
 
-## Screenshots: still to do
+## Screenshots
 
-`images/phoneScreenshots/` is intentionally empty: screenshots must be real captures from a device, and none has been taken yet. Before submitting to F-Droid:
+`images/phoneScreenshots/` is filled by a script, with made-up demo notes and no account or server (`docs/decisions/0008-capturas.md`). Connect a phone (Android 13 or newer; the app is updated, never uninstalled, and its own notes and settings are not touched), then run, with the adb selector of that phone:
 
-1. Install the release APK on a phone and sign in to a test Nextcloud with a few `[test]` notes (never your own notes).
-2. Capture 2 to 8 screens per language (notes list, editor with a checklist, folders drawer, search, settings), in the English and in the Spanish UI.
-3. Save them as `images/phoneScreenshots/1.png`, `2.png`... in `en-US/` and `es-ES/`, commit them, and add them to the README.
+```sh
+scripts/capture-screenshots.sh -s SERIAL   # or: -t TRANSPORT_ID
+```
+
+It runs `ScreenshotTest` in English and Spanish and writes `1_list.png`, `2_folders.png`, `3_editor.png`, `4_search.png` and `5_dark.png` into `en-US/` and `es-ES/`. The system demo mode is on while it runs, so the status bar shows 12:00 and a full battery. Look at every PNG before committing it, and add them to the README.
