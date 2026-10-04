@@ -3,7 +3,6 @@
 
 package com.qtekfun.ultimatenotes.ui.settings
 
-import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -60,7 +59,6 @@ fun SettingsScreen(
     SettingsContent(
         state = state,
         versionName = BuildConfig.VERSION_NAME,
-        dynamicColorAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
         onBack = onBack,
         onTheme = viewModel::setTheme,
         onAmoled = viewModel::setAmoled,
@@ -83,7 +81,6 @@ fun SettingsScreen(
 fun SettingsContent(
     state: SettingsUiState,
     versionName: String,
-    dynamicColorAvailable: Boolean,
     onBack: () -> Unit,
     onTheme: (ThemeMode) -> Unit,
     onAmoled: (Boolean) -> Unit,
@@ -119,7 +116,6 @@ fun SettingsContent(
             AccountSection(state.account, state.loggingOut, onLogOut)
             AppearanceSection(
                 state.settings,
-                dynamicColorAvailable,
                 onTheme,
                 onAmoled,
                 onDynamicColor
@@ -169,7 +165,6 @@ private fun AccountSection(account: Account?, loggingOut: Boolean, onLogOut: () 
 @Composable
 private fun AppearanceSection(
     settings: AppSettings,
-    dynamicColorAvailable: Boolean,
     onTheme: (ThemeMode) -> Unit,
     onAmoled: (Boolean) -> Unit,
     onDynamicColor: (Boolean) -> Unit
@@ -191,14 +186,12 @@ private fun AppearanceSection(
         settings.amoled,
         onAmoled
     )
-    if (dynamicColorAvailable) {
-        SwitchRow(
-            R.string.settings_dynamic_color,
-            R.string.settings_dynamic_color_hint,
-            settings.dynamicColor,
-            onDynamicColor
-        )
-    }
+    SwitchRow(
+        R.string.settings_dynamic_color,
+        R.string.settings_dynamic_color_hint,
+        settings.dynamicColor,
+        onDynamicColor
+    )
     Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
         Text(stringResource(R.string.settings_language), style = MaterialTheme.typography.bodyLarge)
         Text(
@@ -317,7 +310,6 @@ private fun SettingsPreview() {
         SettingsContent(
             state = SettingsUiState(account = Account("https://cloud.example.com/", "ana")),
             versionName = "0.1.0",
-            dynamicColorAvailable = true,
             onBack = {},
             onTheme = {},
             onAmoled = {},

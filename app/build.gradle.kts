@@ -48,7 +48,7 @@ android {
 
     defaultConfig {
         applicationId = "com.qtekfun.ultimatenotes"
-        minSdk = 26
+        minSdk = 31
         targetSdk = 37
         versionCode = versionCodeOf(appVersion)
         versionName = appVersion

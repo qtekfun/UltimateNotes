@@ -7,7 +7,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.ServiceInfo
-import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
@@ -42,15 +41,11 @@ class SyncWorker(context: Context, params: WorkerParameters, private val runner:
             .setSmallIcon(R.mipmap.ic_launcher)
             .setOngoing(true)
             .build()
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            ForegroundInfo(
-                NOTIFICATION_ID,
-                notification,
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
-            )
-        } else {
-            ForegroundInfo(NOTIFICATION_ID, notification)
-        }
+        return ForegroundInfo(
+            NOTIFICATION_ID,
+            notification,
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+        )
     }
 
     private companion object {

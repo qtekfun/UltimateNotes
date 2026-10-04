@@ -37,6 +37,7 @@ con `git revert` del PR indicado.
 | 14 | Capturas de F-Droid con un test instrumentado y datos de demostración; script que exige indicar el dispositivo. Ver ADR 0008. | No requiere cuenta ni servidor. | #24 |
 | 15 | Previsualizaciones y fragmentos de búsqueda en texto plano (`PlainText`). | El Markdown crudo se veía en la lista. | feat/clean-markdown-previews |
 | 16 | El editor mantiene visibles los símbolos de Markdown en el 1.0. | Decisión del usuario (2A); revisar para 1.1. | — |
+| 17 | `minSdk` sube de 26 a 31. | Decisión del usuario: no se instalan emuladores y T17b no puede cubrir API 26/30. Se elimina el flujo de bloqueo para Android 8–10, las carpetas `-v31` y las comprobaciones de versión. | feat/min-sdk-31 |
 
 ## Deuda conocida
 - (Resuelta en #25) Test intermitente `EditorViewModelTest ... after the debounce`.

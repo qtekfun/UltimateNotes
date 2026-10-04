@@ -93,8 +93,10 @@ Recordatorios/notificaciones, etiquetas propias, colores de nota, adjuntos e im�
 - Pirámide: unitarias (domain/data/sync, Kover 85% global y 100% en las piezas críticas de CLAUDE.md) → integración (Room en memoria, MockWebServer con respuestas reales de la API Notes, incluidos 304/412/401/404/5xx y paginación) → UI instrumentada en flujos clave (login, crear/editar/borrar, checklist, búsqueda inferior, hamburguesa/carpetas, bloqueo biométrico, exportar).
 - Propiedades: tests de ida y vuelta del Markdown con corpus real; test de convergencia de sync (secuencias aleatorias de ediciones offline/online en dos "dispositivos" simulados nunca pierden texto).
 - Pruebas manuales/E2E contra servidor Nextcloud real con notas `[test]` antes de cada release (checklist en `RELEASING.md`). CI opcional con Nextcloud en Docker (servicio) para E2E de la API.
-- Matriz mínima: API 26, 30 y la última estable; pantalla pequeña, fuente grande, modo oscuro/AMOLED, ES/EN, TalkBack.
+- Matriz mínima: API 31 (el mínimo) y la última estable; pantalla pequeña, fuente grande, modo oscuro/AMOLED, ES/EN, TalkBack.
 - Ningún release sin `./gradlew check` verde y checklist E2E completa.
+
+- **Plataforma:** `minSdk` 31 (Android 12), decisión del usuario: sin emuladores para API 26/30 y menos ramas de compatibilidad (colores dinámicos, `BIOMETRIC_WEAK or DEVICE_CREDENTIAL`, servicio en primer plano `dataSync` y widget con vista previa son siempre válidos).
 
 ## 12. Artefactos, firma y publicación
 - **Artefactos desde el primer build usable** (T01 en adelante): CI sube el APK debug como artefacto en cada push/PR; desde que exista una pantalla utilizable (hito M1, ver `PLAN.md`) también se publica un **APK firmado de pre-release** (`-rc.N`) en GitHub Releases marcado como pre-release.

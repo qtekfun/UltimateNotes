@@ -13,7 +13,7 @@ Lee siempre `SPEC.md` (qué construir) y `PLAN.md` (en qué orden) antes de empe
 
 ## Stack (no cambiar sin preguntar)
 - Kotlin, Jetpack Compose, Material 3 (colores dinámicos + modo oscuro + AMOLED)
-- `minSdk` 26, `targetSdk` el último estable. Subir `minSdk` solo si algo lo bloquea, y dejarlo anotado en `SPEC.md`.
+- `minSdk` **31** (Android 12; decidido por el usuario, no hay emuladores para API 26/30), `targetSdk` el último estable. Subir `minSdk` solo si algo lo bloquea, y dejarlo anotado en `SPEC.md`.
 - Arquitectura: MVVM + capas `ui` / `domain` / `data` / `sync`, flujo de datos unidireccional (StateFlow)
 - Inyección: Hilt
 - Red: Retrofit + OkHttp + kotlinx.serialization (Nextcloud Notes API v1)
