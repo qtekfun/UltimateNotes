@@ -5,27 +5,73 @@ package com.qtekfun.ultimatenotes.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import com.qtekfun.ultimatenotes.data.settings.ThemeMode
 
-/** Material 3 theme with dynamic colors where the system provides them (Android 12+). */
-@Composable
-fun UltimateNotesTheme(content: @Composable () -> Unit) {
-    val dark = isSystemInDarkTheme()
-    val colors = when {
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
+internal val LightColors = lightColorScheme(
+    primary = Blue40,
+    secondary = Orange40,
+    tertiary = Red40
+)
 
-        dark -> darkColorScheme()
+internal val DarkColors = darkColorScheme(
+    primary = Blue80,
+    secondary = Orange80,
+    tertiary = Red80
+)
 
-        else -> lightColorScheme()
+/**
+ * The color scheme for [options]. [dynamicLight] and [dynamicDark] are the wallpaper colors
+ * (Android 12+), or null where they do not exist.
+ */
+fun colorSchemeFor(
+    options: ThemeOptions,
+    systemDark: Boolean,
+    dynamicLight: ColorScheme?,
+    dynamicDark: ColorScheme?
+): ColorScheme {
+    val dark = when (options.mode) {
+        ThemeMode.SYSTEM -> systemDark
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
     }
-    MaterialTheme(colorScheme = colors, content = content)
+    val dynamic = if (dark) dynamicDark else dynamicLight
+    val scheme =
+        (if (options.dynamicColor) dynamic else null) ?: if (dark) DarkColors else LightColors
+    return if (dark && options.amoled) scheme.toAmoled() else scheme
+}
+
+/** Pure black behind everything, for OLED screens; containers stay just visible. */
+internal fun ColorScheme.toAmoled() = copy(
+    background = Color.Black,
+    surface = Color.Black,
+    surfaceDim = Color.Black,
+    surfaceContainerLowest = Color.Black,
+    surfaceContainerLow = AmoledLow,
+    surfaceContainer = AmoledContainer,
+    surfaceContainerHigh = AmoledHigh,
+    surfaceContainerHighest = AmoledHighest,
+    surfaceBright = AmoledHighest
+)
+
+/** Material 3 theme: wallpaper colors where the system provides them, dark and AMOLED options. */
+@Composable
+fun UltimateNotesTheme(options: ThemeOptions = ThemeOptions(), content: @Composable () -> Unit) {
+    val context = LocalContext.current
+    val dynamic = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    val colorScheme = colorSchemeFor(
+        options = options,
+        systemDark = isSystemInDarkTheme(),
+        dynamicLight = if (dynamic) dynamicLightColorScheme(context) else null,
+        dynamicDark = if (dynamic) dynamicDarkColorScheme(context) else null
+    )
+    MaterialTheme(colorScheme = colorScheme, content = content)
 }
