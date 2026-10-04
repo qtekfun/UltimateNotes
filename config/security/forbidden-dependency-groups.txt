@@ -1,0 +1,25 @@
+# SPDX-FileCopyrightText: 2026 UltimateNotes contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Maven group prefixes that must never appear in the runtime classpath (F-Droid rules in CLAUDE.md:
+# no Google Play Services, Firebase, crash reporters, analytics or other proprietary SDKs).
+# Read by the `checkForbiddenDependencies` Gradle task and by the PolicyFilesTest unit test.
+com.google.android.gms
+com.google.firebase
+com.google.android.play
+com.google.android.datatransport
+com.google.mlkit
+com.crashlytics
+com.google.crashlytics
+io.fabric
+io.sentry
+com.bugsnag
+com.microsoft.appcenter
+com.facebook
+com.mixpanel
+com.amplitude
+com.segment
+com.flurry
+com.appsflyer
+com.adjust
+com.onesignal

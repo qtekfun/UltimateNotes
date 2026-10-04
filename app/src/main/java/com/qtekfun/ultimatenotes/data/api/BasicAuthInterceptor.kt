@@ -19,17 +19,17 @@ import okhttp3.ResponseBody.Companion.toResponseBody
 class BasicAuthInterceptor(private val provider: CredentialsProvider, private val host: String) :
     Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
-        if (!chain.request().url.host.equals(host, ignoreCase = true)) {
-            return chain.proceed(chain.request().newBuilder().removeHeader("Authorization").build())
+        val original = chain.request()
+        if (!original.url.host.equals(host, ignoreCase = true)) {
+            return chain.proceed(original.newBuilder().removeHeader("Authorization").build())
         }
-        val credentials = provider.credentials() ?: return noAccount(chain.request())
-        val request = chain.request().newBuilder()
-            .header(
-                "Authorization",
-                OkCredentials.basic(credentials.username, credentials.appPassword)
-            )
-            .build()
-        return chain.proceed(request)
+        val credentials = provider.credentials()
+        return if (credentials == null) {
+            noAccount(original)
+        } else {
+            val header = OkCredentials.basic(credentials.username, credentials.appPassword)
+            chain.proceed(original.newBuilder().header("Authorization", header).build())
+        }
     }
 
     private fun noAccount(request: Request): Response = Response.Builder()
