@@ -57,3 +57,30 @@ Se revisó `logcat --uid` de la app tras todas las ejecuciones: 0 `FATAL EXCEPTI
 - Matriz de API: descartada (minSdk 31); solo se probó Android 16.
 - Pull con red y JSON reales (en dispositivo solo contra el servidor falso en proceso).
 - Archivos añadidos: `app/src/androidTest/.../quality/` (arnés `DeviceTestBase`, tests y `SyntheticNotes`), `scripts/t17b-font-scale.sh`, y `FakeNotesServer` pasa a `app/src/sharedTest` para usarlo también desde `androidTest`.
+
+## Adenda: tras corregir la regresión de las previsualizaciones (PR #35)
+
+La medición de T17b destapó que `PlainText` (PR #28) hacía que cada previsualización procesara
+todas las líneas de la nota. PR #35 la hace perezosa y evita los regex en líneas sin marcas.
+
+Medido de nuevo en el OPPO CPH2841 (Android 16, compilación de depuración, 5 000 notas sintéticas):
+
+| Medida | Antes de #28 | Con #28 | Tras #35 |
+|---|---|---|---|
+| Lista: filas y secciones | 0,65 s | 4,2 s | 0,41 s |
+| Primera consulta de la lista | — | — | 0,19 s |
+| Arranque hasta la primera fila | 1,6 s | 5,4 s | 1,36 s |
+| Búsqueda (mediana) | — | 55–180 ms | 83 ms |
+| Primer pull de 5 000 notas | — | 3,0 s | 3,05 s |
+
+JVM: la lista de 5 000 notas pasa de 1 420 ms a 57 ms. El presupuesto del test de rendimiento
+baja de 2 000 a 500 ms: con el anterior, esta regresión habría pasado la CI.
+
+**SPEC §10 pide menos de 1 s hasta la lista con 5 000 notas.** En depuración son 1,36 s, y la
+mayor parte es el arranque de la app, no la lista: con 500 notas ya se medía ~1,3 s. No se ha
+medido una compilación de release (R8, sin depuración), que debería ser más rápida.
+
+**Sin medir:** el desplazamiento (el inyector de gestos de Compose da ~70 % de fotogramas lentos
+a cualquier tamaño, es un artefacto del arnés), TalkBack real, biometría, arranque en release y
+pull con red y JSON reales. Una migración desde un APK publicado anterior no aplica: aún no hay
+ninguna versión publicada.
