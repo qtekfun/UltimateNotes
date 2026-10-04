@@ -361,6 +361,52 @@ class SyncEnginePullTest {
         }
 
     @Test
+    fun `a favorite here and a text edit there merge while pulling without a copy`() = runBlocking {
+        val a = server.put("A", category = "Work")
+        client.sync()
+        val id = client.byContent("A").localId
+        client.favorite(id, true)
+        server.edit(a, "A from the server")
+
+        val report = success(client.sync())
+
+        assertEquals(0, report.forked)
+        assertEquals(1, report.pushed)
+        assertEquals(listOf(Triple("A from the server", "Work", true)), server.snapshot())
+        assertEquals(listOf("A"), server.titles())
+        assertEquals(setOf(SyncState.SYNCED), client.all().map { it.syncState }.toSet())
+    }
+
+    @Test
+    fun `a text edit here and a folder change there merge while pulling without a copy`() =
+        runBlocking {
+            val a = server.put("A", category = "Work")
+            client.sync()
+            client.edit(client.byContent("A").localId, "A edited here")
+            server.move(a, "Home")
+
+            val report = success(client.sync())
+
+            assertEquals(0, report.forked)
+            assertEquals(listOf(Triple("A edited here", "Home", false)), server.snapshot())
+            assertEquals(listOf(Triple("A edited here", "Home", false)), client.visible())
+        }
+
+    @Test
+    fun `a local rename and a remote text edit merge while pulling`() = runBlocking {
+        val a = server.put("A")
+        client.sync()
+        client.retitle(client.byContent("A").localId, "Mine")
+        server.edit(a, "A from the server")
+
+        val report = success(client.sync())
+
+        assertEquals(0, report.forked)
+        assertEquals("Mine", server.titleOf(a))
+        assertEquals(listOf("A from the server"), server.contents())
+    }
+
+    @Test
     fun `a dirty note whose server version did not change is not resolved`() = runBlocking {
         server.put("A")
         server.put("B")
