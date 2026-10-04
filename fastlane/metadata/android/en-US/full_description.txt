@@ -1,5 +1,18 @@
 UltimateNotes is a notes app for your own <b>Nextcloud Notes</b> server, inspired by Apple Notes. It keeps working without a connection and syncs when it can.
 
-Free software (GPL-3.0-or-later). No Google services, no ads, no analytics, no tracking: your notes only travel between your phone and your own Nextcloud server, always over HTTPS. The app password is stored encrypted with the Android Keystore, Android cloud backup is off, and note content is never logged. See PRIVACY.md in the repository for details.
+It needs a Nextcloud server with the <b>Notes</b> app installed. You sign in with Nextcloud's Login Flow, and the app password is stored encrypted with the Android Keystore.
 
-Under construction: this is an early scaffold.
+<b>Features</b>
+• Two-way sync with Nextcloud Notes: edit offline, changes are queued and sent later. If a note changed in two places, no text is lost: the other version is kept as a copy.
+• Folders (and subfolders), favorites on top, and a list grouped by date with a preview of each note.
+• WYSIWYG editor that saves plain Markdown: headings, bold, italic, strikethrough, lists, quotes, links and inline code. Syntax it does not support is kept untouched.
+• Interactive checklists.
+• Full-text search that works offline.
+• Home screen widget with your recent and favorite notes.
+• Biometric lock.
+• Export a note as Markdown or PDF.
+• Encrypted backup of your settings and account.
+• Light, dark and pure black (AMOLED) themes with Material You colors. English and Spanish.
+
+<b>Free software</b>
+GPL-3.0-or-later. No Google services, no ads, no analytics, no tracking: your notes only travel between your phone and your own Nextcloud server, always over HTTPS. The app password is stored encrypted with the Android Keystore, Android cloud backup is off, and note content is never logged. See PRIVACY.md in the repository for details.

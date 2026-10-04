@@ -1,0 +1,1 @@
+First version: sync with Nextcloud Notes (offline first), folders, WYSIWYG Markdown editor, checklists, favorites, offline full-text search, widget, biometric lock, export to Markdown and PDF, and encrypted backup.
