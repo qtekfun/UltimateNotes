@@ -41,6 +41,8 @@ import com.qtekfun.ultimatenotes.BuildConfig
 import com.qtekfun.ultimatenotes.R
 import com.qtekfun.ultimatenotes.data.auth.Account
 import com.qtekfun.ultimatenotes.data.settings.AppSettings
+import com.qtekfun.ultimatenotes.data.settings.SyncInterval
+import com.qtekfun.ultimatenotes.data.settings.SyncNetwork
 import com.qtekfun.ultimatenotes.data.settings.ThemeMode
 import com.qtekfun.ultimatenotes.domain.list.NoteSortOrder
 import com.qtekfun.ultimatenotes.ui.main.sortLabel
@@ -65,6 +67,8 @@ fun SettingsScreen(
         onDynamicColor = viewModel::setDynamicColor,
         onSortOrder = viewModel::setSortOrder,
         onLogOut = viewModel::logOut,
+        onSyncInterval = viewModel::setSyncInterval,
+        onSyncNetwork = viewModel::setSyncNetwork,
         modifier = modifier
     )
 }
@@ -82,7 +86,9 @@ fun SettingsContent(
     onDynamicColor: (Boolean) -> Unit,
     onSortOrder: (NoteSortOrder) -> Unit,
     onLogOut: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onSyncInterval: (SyncInterval) -> Unit = {},
+    onSyncNetwork: (SyncNetwork) -> Unit = {}
 ) {
     Scaffold(
         modifier = modifier,
@@ -114,6 +120,7 @@ fun SettingsContent(
                 onDynamicColor
             )
             ListSection(state.settings.sortOrder, onSortOrder)
+            SyncSection(state.settings, onSyncInterval, onSyncNetwork)
             SectionHeader(R.string.settings_about)
             Text(
                 text = stringResource(R.string.settings_version, versionName),
@@ -227,7 +234,7 @@ private fun ListSection(sortOrder: NoteSortOrder, onSortOrder: (NoteSortOrder) -
 }
 
 @Composable
-private fun SectionHeader(title: Int) {
+internal fun SectionHeader(title: Int) {
     Text(
         text = stringResource(title),
         style = MaterialTheme.typography.titleSmall,
@@ -237,7 +244,18 @@ private fun SectionHeader(title: Int) {
 }
 
 @Composable
-private fun ThemeRow(mode: ThemeMode, selected: Boolean, onClick: () -> Unit) {
+private fun ThemeRow(mode: ThemeMode, selected: Boolean, onClick: () -> Unit) = OptionRow(
+    label = when (mode) {
+        ThemeMode.SYSTEM -> R.string.theme_system
+        ThemeMode.LIGHT -> R.string.theme_light
+        ThemeMode.DARK -> R.string.theme_dark
+    },
+    selected = selected,
+    onClick = onClick
+)
+
+@Composable
+internal fun OptionRow(label: Int, selected: Boolean, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -248,15 +266,7 @@ private fun ThemeRow(mode: ThemeMode, selected: Boolean, onClick: () -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         RadioButton(selected = selected, onClick = null)
-        Text(
-            stringResource(
-                when (mode) {
-                    ThemeMode.SYSTEM -> R.string.theme_system
-                    ThemeMode.LIGHT -> R.string.theme_light
-                    ThemeMode.DARK -> R.string.theme_dark
-                }
-            )
-        )
+        Text(stringResource(label))
     }
 }
 

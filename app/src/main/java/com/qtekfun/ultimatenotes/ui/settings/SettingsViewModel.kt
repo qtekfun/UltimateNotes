@@ -9,6 +9,8 @@ import com.qtekfun.ultimatenotes.data.auth.Account
 import com.qtekfun.ultimatenotes.data.auth.AccountSession
 import com.qtekfun.ultimatenotes.data.settings.AppSettings
 import com.qtekfun.ultimatenotes.data.settings.SettingsRepository
+import com.qtekfun.ultimatenotes.data.settings.SyncInterval
+import com.qtekfun.ultimatenotes.data.settings.SyncNetwork
 import com.qtekfun.ultimatenotes.data.settings.ThemeMode
 import com.qtekfun.ultimatenotes.domain.auth.Logout
 import com.qtekfun.ultimatenotes.domain.list.NoteSortOrder
@@ -50,6 +52,9 @@ class SettingsViewModel @Inject constructor(
     fun setDynamicColor(on: Boolean) = repository.setDynamicColor(on)
 
     fun setSortOrder(order: NoteSortOrder) = repository.setSortOrder(order)
+    fun setSyncInterval(interval: SyncInterval) = repository.setSyncInterval(interval)
+
+    fun setSyncNetwork(network: SyncNetwork) = repository.setSyncNetwork(network)
 
     /** Signs out; the app then routes to the login screen by itself. */
     fun logOut() {
