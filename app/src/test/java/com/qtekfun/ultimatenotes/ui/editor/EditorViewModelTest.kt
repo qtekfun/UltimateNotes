@@ -6,6 +6,7 @@ package com.qtekfun.ultimatenotes.ui.editor
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.text.TextRange
+import androidx.lifecycle.viewModelScope
 import com.qtekfun.ultimatenotes.data.local.entity.NoteEntity
 import com.qtekfun.ultimatenotes.data.local.inMemoryDatabase
 import com.qtekfun.ultimatenotes.data.local.model.SyncState
@@ -27,8 +28,10 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
@@ -62,8 +65,17 @@ class EditorViewModelTest {
     @BeforeEach
     fun setUp() = Dispatchers.setMain(UnconfinedTestDispatcher())
 
+    /**
+     * The models of the test. Their view-model scope runs on Main and observes Room: it must be
+     * over, completions included, before Main is reset and the database closed. Otherwise a
+     * Room thread finishes it later, finds Main gone, and the exception is reported against
+     * whichever test runs next (the intermittent CI failure).
+     */
+    private val models = mutableListOf<EditorViewModel>()
+
     @AfterEach
     fun tearDown() {
+        runBlocking { models.forEach { it.viewModelScope.coroutineContext[Job]!!.cancelAndJoin() } }
         Dispatchers.resetMain()
         database.close()
     }
@@ -77,7 +89,7 @@ class EditorViewModelTest {
         ObserveFolders(dao),
         trigger,
         backgroundScope
-    )
+    ).also { models += it }
 
     private suspend fun synced(
         content: String = "hello",
@@ -329,7 +341,9 @@ class EditorViewModelTest {
         val release = CompletableDeferred<Unit>()
         // The write reaches the database, then the save is held up (as a slow disk would).
         coEvery { writer.update(any(), any(), any()) } coAnswers {
-            val wrote = NoteWriter(dao, clock) { "New note" }.update(firstArg(), secondArg(), thirdArg())
+            val wrote = NoteWriter(dao, clock) {
+                "New note"
+            }.update(firstArg(), secondArg(), thirdArg())
             committed.complete(Unit)
             release.await()
             wrote
