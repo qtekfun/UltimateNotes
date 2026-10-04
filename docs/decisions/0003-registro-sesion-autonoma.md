@@ -39,6 +39,8 @@ con `git revert` del PR indicado.
 | 16 | El editor mantiene visibles los símbolos de Markdown en el 1.0. | Decisión del usuario (2A); revisar para 1.1. | — |
 | 17 | `minSdk` sube de 26 a 31. | Decisión del usuario: no se instalan emuladores y T17b no puede cubrir API 26/30. Se elimina el flujo de bloqueo para Android 8–10, las carpetas `-v31` y las comprobaciones de versión. | feat/min-sdk-31 |
 | 18 | Icono: opción 4 (hoja y lápiz), primero en coral y luego en el azul de la app `#0B63CE` a petición del usuario. | Coincide con el fondo del icono de Tasks; ver 0012. | feat/icon-pencil, feat/icon-app-blue |
+| 19 | `v0.1.0-rc.1` publicada como pre-release; la firma coincide con la huella indicada por el mantenedor. | Primera ejecución real del workflow de release. | #37 |
+| 20 | T17b se da por hecho con excepciones aceptadas: voz real de TalkBack, desplazamiento con gesto real y arranque en release a lista. | Decisión del mantenedor; la biometría la probó él. | #34, #35 |
 
 ## Deuda conocida
 - (Resuelta en #25) Test intermitente `EditorViewModelTest ... after the debounce`.
