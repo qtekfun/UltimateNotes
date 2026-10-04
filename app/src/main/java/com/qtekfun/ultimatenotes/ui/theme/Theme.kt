@@ -3,6 +3,7 @@
 
 package com.qtekfun.ultimatenotes.ui.theme
 
+import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
@@ -12,8 +13,12 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 import com.qtekfun.ultimatenotes.data.settings.ThemeMode
 
 internal val LightColors = lightColorScheme(
@@ -73,5 +78,25 @@ fun UltimateNotesTheme(options: ThemeOptions = ThemeOptions(), content: @Composa
         dynamicLight = if (dynamic) dynamicLightColorScheme(context) else null,
         dynamicDark = if (dynamic) dynamicDarkColorScheme(context) else null
     )
+    SystemBarIcons(light = colorScheme.background.luminance() > LIGHT_BACKGROUND)
     MaterialTheme(colorScheme = colorScheme, content = content)
 }
+
+/**
+ * Dark icons over a light app, light icons over a dark one. The edge-to-edge default follows the
+ * system theme, so a light app on a dark system (or the reverse) had invisible clock and battery.
+ */
+@Composable
+private fun SystemBarIcons(light: Boolean) {
+    val view = LocalView.current
+    if (view.isInEditMode) return
+    SideEffect {
+        val window = (view.context as? Activity)?.window ?: return@SideEffect
+        WindowCompat.getInsetsController(window, view).apply {
+            isAppearanceLightStatusBars = light
+            isAppearanceLightNavigationBars = light
+        }
+    }
+}
+
+private const val LIGHT_BACKGROUND = 0.5f
