@@ -26,7 +26,7 @@ Hitos: **M0** = CI con artefacto debug (T01) · **M1** = primera versión usable
 
 ## Fase 4 — Extras
 - [x] **T13 Biometría**: bloqueo global, timeout, `FLAG_SECURE` opcional.
-- [ ] **T14 Exportar**: `.md` y PDF.
+- [x] **T14 Exportar**: `.md` y PDF.
 - [ ] **T15 Widget Glance**: recientes/favoritas + nota nueva, respeta bloqueo.
 - [x] **T16 Backup cifrado (M2)** (copiar de Tasks).
 
