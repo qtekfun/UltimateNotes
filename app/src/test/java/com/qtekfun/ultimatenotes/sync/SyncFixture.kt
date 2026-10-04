@@ -34,23 +34,32 @@ class InMemoryCheckpointStore : SyncCheckpointStore {
 
 val TEST_CLOCK: Clock = Clock.fixed(Instant.parse("2026-10-04T10:00:00Z"), ZoneOffset.UTC)
 
-/** One simulated client: its own Room database and checkpoint, talking to a shared [server]. */
+/**
+ * One simulated client: its own Room database and checkpoint, talking through [client] (a fake
+ * server shared between fixtures, or a real Nextcloud in the E2E suite).
+ */
 class SyncFixture(
-    val server: FakeNotesServer = FakeNotesServer(),
-    wrapDao: (NoteSyncWriteDao) -> NoteSyncWriteDao = { it }
+    client: NotesClient,
+    wrapDao: (NoteSyncWriteDao) -> NoteSyncWriteDao = { it },
+    chunkSize: Int = CHUNK
 ) {
+    constructor(
+        server: FakeNotesServer = FakeNotesServer(),
+        wrapDao: (NoteSyncWriteDao) -> NoteSyncWriteDao = { it }
+    ) : this(NotesClient(server, Dispatchers.Unconfined), wrapDao)
+
     val database: UltimateNotesDatabase = inMemoryDatabase()
     val dao: NoteSyncWriteDao = database.noteSyncWriteDao()
     private val reads = database.noteSyncDao()
     val checkpoints = InMemoryCheckpointStore()
     val engine = SyncEngine(
-        client = NotesClient(server, Dispatchers.Unconfined),
+        client = client,
         reads = reads,
         writes = wrapDao(dao),
         checkpoints = checkpoints,
         resolver = ConflictResolver(TEST_CLOCK),
         io = Dispatchers.Unconfined,
-        chunkSize = CHUNK
+        chunkSize = chunkSize
     )
 
     suspend fun sync() = engine.sync()
