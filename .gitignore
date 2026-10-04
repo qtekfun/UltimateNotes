@@ -17,3 +17,6 @@ captures/
 # Signing
 *.jks
 *.keystore
+
+# Claude Code local state
+.claude/

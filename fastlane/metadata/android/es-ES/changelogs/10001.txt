@@ -1,0 +1,1 @@
+Primera versión: sincronización con Nextcloud Notes (sin conexión primero), carpetas, editor Markdown WYSIWYG, checklists, favoritas, búsqueda de texto completo sin conexión, widget, bloqueo biométrico, exportar a Markdown y PDF y copia de seguridad cifrada.

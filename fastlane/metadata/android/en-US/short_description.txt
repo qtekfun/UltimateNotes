@@ -1,1 +1,1 @@
-Nextcloud Notes the Apple Notes way, offline first
+Offline-first notes client for Nextcloud Notes, Apple Notes style

@@ -80,3 +80,41 @@ Use the signed APK and a real Nextcloud with the Notes app. Use only a dedicated
 - [ ] Revoke the app password in Nextcloud: the app asks to log in again without losing local notes.
 - [ ] Biometric lock, widget, PDF export and encrypted backup/restore work on the `[test]` notes.
 - [ ] Install over the previous release: the app updates in place, data intact (same signing key and a higher version code).
+
+## F-Droid
+
+`fdroid/com.qtekfun.ultimatenotes.yml` is the app's metadata as submitted to [fdroiddata](https://gitlab.com/fdroid/fdroiddata) (`metadata/com.qtekfun.ultimatenotes.yml`). It has no comments because fdroiddata's tools remove them. F-Droid builds each tagged version with JDK 21, like CI, checks that its APK matches ours (`Binaries`, `AllowedAPKSigningKeys`) and then publishes ours. The app declares no `AntiFeatures`: it only talks to the user's own server, so `NonFreeNet` does not apply.
+
+Two fields are placeholders (`TODO-...`) until the key and the first tag exist:
+
+- `commit`: the full 40-character hash of the commit the tag points to (`git rev-parse vX.Y.Z^{commit}`).
+- `AllowedAPKSigningKeys`: the certificate fingerprint from [Signing](#signing-one-time), step 3.
+
+`versionName`, `versionCode`, `CurrentVersion` and `CurrentVersionCode` are already filled for 1.0.0 (`1000099`); for another first version use `appVersion` and the formula in [Versions](#versions). After the first inclusion, `AutoUpdateMode: Version` adds the new `Builds` entries by itself for each final tag.
+
+### Submitting the merge request (first inclusion)
+
+Only after the tag, the GitHub Release with the signed APK (`UltimateNotes-X.Y.Z.apk`) and the screenshots exist.
+
+1. Fork <https://gitlab.com/fdroid/fdroiddata> and clone your fork; create a branch `com.qtekfun.ultimatenotes`.
+2. Copy `fdroid/com.qtekfun.ultimatenotes.yml` to `metadata/com.qtekfun.ultimatenotes.yml` and fill in `commit` and `AllowedAPKSigningKeys`.
+3. Check it, from the fdroiddata checkout (with [fdroidserver](https://gitlab.com/fdroid/fdroidserver) installed, or its Docker image `registry.gitlab.com/fdroid/docker-executable-fdroidserver`):
+   ```sh
+   fdroid readmeta
+   fdroid lint com.qtekfun.ultimatenotes
+   fdroid rewritemeta com.qtekfun.ultimatenotes   # must leave no diff
+   fdroid build -v -l com.qtekfun.ultimatenotes   # needs the build server setup; optional locally
+   ```
+4. Commit (`New app: UltimateNotes`) and push the branch to your fork.
+5. Open a merge request to `fdroid/fdroiddata` with the project's MR template filled in (checklist included) and link the repository and the release.
+6. Answer the reviewers; the pipeline (lint, build, binaries verification) must be green.
+
+### Only the maintainer can do
+
+- [ ] Create the signing key and back it up (see [Signing](#signing-one-time)).
+- [ ] Add the secrets `UN_KEYSTORE_BASE64`, `UN_KEYSTORE_PASSWORD`, `UN_KEY_ALIAS` and `UN_KEY_PASSWORD` to the GitHub repository.
+- [ ] Capture phone screenshots on a device (English and Spanish UI, 2 to 8 each) into `fastlane/metadata/android/{en-US,es-ES}/images/phoneScreenshots/` (`1.png`, `2.png`...), using only `[test]` notes. See `fastlane/README.md`.
+- [ ] Run the manual E2E checklist on a device.
+- [ ] Merge the release commit, then create and push the tag `vX.Y.Z` (the Release workflow does the rest).
+- [ ] Fill in `commit` and `AllowedAPKSigningKeys` in the yml, and open the fdroiddata merge request.
+- [ ] When F-Droid publishes the app, add its badge and link to `README.md`.
