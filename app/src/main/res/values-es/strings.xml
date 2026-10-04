@@ -51,4 +51,47 @@
     <string name="settings_language_hint">UltimateNotes usa el idioma de tu dispositivo.</string>
     <string name="settings_about">Acerca de</string>
     <string name="settings_version">Versión %1$s</string>
+    <string name="section_pinned">Fijadas</string>
+    <string name="section_today">Hoy</string>
+    <string name="section_yesterday">Ayer</string>
+    <string name="section_previous_7_days">Últimos 7 días</string>
+    <string name="section_previous_30_days">Últimos 30 días</string>
+    <string name="section_notes">Notas</string>
+    <string name="note_untitled">Nota sin título</string>
+    <string name="note_no_preview">Sin texto adicional</string>
+    <string name="note_favorite">Favorita</string>
+    <string name="note_unfavorite">Quitar de favoritas</string>
+    <string name="note_is_favorite">Nota favorita</string>
+    <string name="note_delete">Borrar</string>
+    <string name="list_empty_hint">Toca el lápiz para escribir una.</string>
+    <string name="list_empty_favorites">Aún no hay notas favoritas.</string>
+    <string name="list_empty_favorites_hint">Desliza una nota hacia la derecha para añadirla aquí.</string>
+    <string name="list_empty_folder">Esta carpeta aún no tiene notas.</string>
+    <string name="list_more">Más opciones</string>
+    <string name="list_sort_by">Ordenar por</string>
+    <string name="sort_modified">Fecha de modificación</string>
+    <string name="sort_title">Título</string>
+    <plurals name="selected_count">
+        <item quantity="one">%d seleccionada</item>
+        <item quantity="many">%d seleccionadas</item>
+        <item quantity="other">%d seleccionadas</item>
+    </plurals>
+    <string name="select_close">Cancelar selección</string>
+    <string name="select_all">Seleccionar todo</string>
+    <string name="select_move">Mover a carpeta</string>
+    <plurals name="notes_deleted">
+        <item quantity="one">Nota borrada</item>
+        <item quantity="many">%d notas borradas</item>
+        <item quantity="other">%d notas borradas</item>
+    </plurals>
+    <string name="undo">Deshacer</string>
+    <string name="move_title">Mover a carpeta</string>
+    <string name="move_new_folder">Carpeta nueva</string>
+    <string name="move_new_folder_hint">Usa / para subcarpetas, como Trabajo/Reuniones.</string>
+    <string name="move_confirm">Mover</string>
+    <string name="cancel">Cancelar</string>
+    <string name="settings_list">Lista de notas</string>
+    <string name="settings_sort">Ordenar notas por</string>
+    <string name="editor_stub_title">Nota</string>
+    <string name="editor_stub_message">El editor llegará pronto.</string>
 </resources>

@@ -18,6 +18,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.qtekfun.ultimatenotes.ui.login.LoginScreen
 import com.qtekfun.ultimatenotes.ui.main.MainScreen
+import com.qtekfun.ultimatenotes.ui.main.NoteStubScreen
 import com.qtekfun.ultimatenotes.ui.settings.SettingsScreen
 import com.qtekfun.ultimatenotes.ui.theme.UltimateNotesTheme
 
@@ -27,6 +28,7 @@ fun AppRoot(viewModel: AppViewModel = viewModel()) {
     val destination by viewModel.destination.collectAsStateWithLifecycle()
     val theme by viewModel.theme.collectAsStateWithLifecycle()
     var inSettings by rememberSaveable(destination) { mutableStateOf(false) }
+    var openNote by rememberSaveable(destination) { mutableStateOf<Long?>(null) }
     UltimateNotesTheme(theme) {
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             when (destination) {
@@ -38,8 +40,14 @@ fun AppRoot(viewModel: AppViewModel = viewModel()) {
                 AppDestination.MAIN -> if (inSettings) {
                     BackHandler { inSettings = false }
                     SettingsScreen(onBack = { inSettings = false })
+                } else if (openNote != null) {
+                    BackHandler { openNote = null }
+                    NoteStubScreen(onBack = { openNote = null }) // T11 brings the editor
                 } else {
-                    MainScreen(onOpenSettings = { inSettings = true })
+                    MainScreen(
+                        onOpenSettings = { inSettings = true },
+                        onOpenNote = { openNote = it }
+                    )
                 }
             }
         }

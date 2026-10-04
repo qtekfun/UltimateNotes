@@ -3,48 +3,81 @@
 
 package com.qtekfun.ultimatenotes.ui.main
 
+import androidx.activity.compose.BackHandler
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.qtekfun.ultimatenotes.R
 import com.qtekfun.ultimatenotes.domain.folder.FolderNode
 import com.qtekfun.ultimatenotes.domain.folder.FolderOverview
 import com.qtekfun.ultimatenotes.domain.folder.FolderSelection
+import com.qtekfun.ultimatenotes.domain.list.NoteSortOrder
 import com.qtekfun.ultimatenotes.ui.theme.UltimateNotesTheme
 import kotlinx.coroutines.launch
 
-/** The main screen: folder drawer, large title and the floating search bar. */
+/** The main screen: folder drawer, large title, note list and the floating search bar. */
 @Composable
 fun MainScreen(
     onOpenSettings: () -> Unit,
+    onOpenNote: (Long) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: MainViewModel = viewModel()
 ) {
@@ -53,8 +86,22 @@ fun MainScreen(
         state = state,
         onSelect = viewModel::select,
         onOpenSettings = onOpenSettings,
-        onNewNote = {}, // T11
-        modifier = modifier
+        onNewNote = { onOpenNote(NEW_NOTE_ID) },
+        modifier = modifier,
+        actions = ListActions(
+            onOpenNote = onOpenNote,
+            onRefresh = viewModel::refresh,
+            onToggleFavorite = viewModel::toggleFavorite,
+            onDelete = { viewModel.delete(it.localId) },
+            onUndoDelete = viewModel::undoDelete,
+            onToggleSelected = viewModel::toggleSelected,
+            onClearSelection = viewModel::clearSelection,
+            onSelectAll = viewModel::selectAll,
+            onFavoriteSelected = viewModel::favoriteSelected,
+            onDeleteSelected = viewModel::deleteSelected,
+            onMoveSelected = viewModel::moveSelected,
+            onSortOrder = viewModel::setSortOrder
+        )
     )
 }
 
@@ -66,12 +113,18 @@ fun MainContent(
     onOpenSettings: () -> Unit,
     onNewNote: () -> Unit,
     modifier: Modifier = Modifier,
-    drawerState: DrawerState = rememberDrawerState(DrawerValue.Closed)
+    drawerState: DrawerState = rememberDrawerState(DrawerValue.Closed),
+    actions: ListActions = ListActions()
 ) {
     val scope = rememberCoroutineScope()
+    val snackbar = remember { SnackbarHostState() }
+    var moving by rememberSaveable { mutableStateOf(false) }
+    UndoSnackbar(state.pendingDeletion, snackbar, actions.onUndoDelete)
+    BackHandler(enabled = state.selecting, onBack = actions.onClearSelection)
     ModalNavigationDrawer(
         drawerState = drawerState,
         modifier = modifier,
+        gesturesEnabled = !state.selecting,
         drawerContent = {
             FolderDrawer(
                 folders = state.folders,
@@ -92,27 +145,58 @@ fun MainContent(
             Scaffold(
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                 topBar = {
-                    LargeTopAppBar(
-                        title = { Text(folderTitle(state.selection)) },
-                        navigationIcon = {
-                            // Where Apple Notes puts "Edit" (SPEC §7).
-                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                                Icon(
-                                    Icons.Default.Menu,
-                                    contentDescription = stringResource(R.string.folders_open)
-                                )
-                            }
-                        },
+                    MainTopBar(
+                        state = state,
+                        actions = actions,
+                        onOpenDrawer = { scope.launch { drawerState.open() } },
+                        onMove = { moving = true },
                         scrollBehavior = scrollBehavior
                     )
                 }
             ) { padding ->
-                NoteListPlaceholder(contentPadding = padding.withFloatingBar()) // T10
+                NoteList(state, actions, contentPadding = padding.withFloatingBar())
             }
-            FloatingSearchBar(
-                onNewNote = onNewNote,
-                modifier = Modifier.align(Alignment.BottomCenter)
+            if (!state.selecting) {
+                FloatingSearchBar(
+                    onNewNote = onNewNote,
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                )
+            }
+            UndoHost(snackbar, state.selecting, Modifier.align(Alignment.BottomCenter))
+        }
+    }
+    if (moving) {
+        MoveDialog(state.folders.folders, onDismiss = { moving = false }) {
+            moving = false
+            actions.onMoveSelected(it)
+        }
+    }
+}
+
+/** The snackbar, above the floating bar and the system bars. */
+@Composable
+private fun UndoHost(host: SnackbarHostState, selecting: Boolean, modifier: Modifier) {
+    SnackbarHost(
+        hostState = host,
+        modifier = modifier
+            .windowInsetsPadding(
+                WindowInsets.safeDrawing.only(
+                    WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
+                )
             )
+            .padding(bottom = if (selecting) 0.dp else FloatingSearchBarHeight)
+    )
+}
+
+/** Shows the undo snackbar while a deletion is pending; it goes away when the window closes. */
+@Composable
+private fun UndoSnackbar(pending: PendingDeletion?, host: SnackbarHostState, onUndo: () -> Unit) {
+    val message = pending?.let { pluralStringResource(R.plurals.notes_deleted, it.count, it.count) }
+    val undo = stringResource(R.string.undo)
+    LaunchedEffect(pending?.token) {
+        if (message != null) {
+            val result = host.showSnackbar(message, undo, duration = SnackbarDuration.Indefinite)
+            if (result == SnackbarResult.ActionPerformed) onUndo()
         }
     }
 }
@@ -129,33 +213,6 @@ private fun PaddingValues.withFloatingBar(): PaddingValues {
     )
 }
 
-/** Empty state until the note list arrives (T10). Scrollable, so the large title collapses. */
-@Composable
-private fun NoteListPlaceholder(contentPadding: PaddingValues) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = contentPadding
-    ) {
-        item {
-            Box(Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
-                Text(
-                    text = stringResource(R.string.main_empty),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun folderTitle(selection: FolderSelection): String = when (selection) {
-    FolderSelection.All -> stringResource(R.string.folder_all)
-    FolderSelection.Favorites -> stringResource(R.string.folder_favorites)
-    FolderSelection.NoFolder -> stringResource(R.string.folder_none)
-    is FolderSelection.Folder -> selection.name
-}
-
 @Preview
 @Composable
 @Suppress("MagicNumber")
@@ -164,7 +221,8 @@ private fun MainContentPreview() {
         MainContent(
             state = MainUiState(
                 FolderSelection.All,
-                FolderOverview(total = 3, folders = listOf(FolderNode("Work", 0, 3)))
+                FolderOverview(total = 3, folders = listOf(FolderNode("Work", 0, 3))),
+                loaded = true
             ),
             onSelect = {},
             onOpenSettings = {},
