@@ -6,6 +6,7 @@ package com.qtekfun.ultimatenotes.data.local.dao
 import androidx.room3.Dao
 import androidx.room3.Insert
 import androidx.room3.Query
+import androidx.room3.Transaction
 import androidx.room3.Update
 import com.qtekfun.ultimatenotes.data.local.entity.NoteEntity
 import com.qtekfun.ultimatenotes.data.local.model.FolderCount
@@ -69,4 +70,17 @@ interface NoteDao {
 
     @Query("DELETE FROM note WHERE localId = :localId")
     suspend fun delete(localId: Long)
+
+    /**
+     * Reads the note, lets [change] derive its new version and stores it, in one transaction, so
+     * a sync write landing in between is never overwritten with stale fields. [change] returns
+     * null to leave the note as it is. Returns whether a new version was stored.
+     */
+    @Transaction
+    suspend fun modify(localId: Long, change: (NoteEntity) -> NoteEntity?): Boolean {
+        val current = get(localId) ?: return false
+        val changed = change(current) ?: return false
+        update(changed)
+        return true
+    }
 }
