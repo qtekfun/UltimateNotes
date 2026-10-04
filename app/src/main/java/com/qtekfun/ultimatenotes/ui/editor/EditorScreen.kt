@@ -57,6 +57,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.qtekfun.ultimatenotes.R
 import com.qtekfun.ultimatenotes.domain.markdown.FormatAction
+import com.qtekfun.ultimatenotes.ui.export.ExportFlow
 import com.qtekfun.ultimatenotes.ui.main.MoveDialog
 import kotlinx.coroutines.launch
 
@@ -83,6 +84,7 @@ fun EditorScreen(
     LaunchedEffect(noteId, newNoteCategory) { viewModel.open(noteId, newNoteCategory) }
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) { viewModel.saveInBackground() }
     LaunchedEffect(state.missing) { if (state.missing) onClose() }
+    var exporting by rememberSaveable { mutableStateOf(false) }
     val leave = {
         viewModel.close()
         onClose()
@@ -98,6 +100,7 @@ fun EditorScreen(
             onFormat = viewModel::format,
             onToggleFavorite = viewModel::toggleFavorite,
             onMove = viewModel::move,
+            onExport = { exporting = true },
             onDelete = {
                 scope.launch {
                     viewModel.closeForDelete()?.let(onDeleted)
@@ -106,6 +109,12 @@ fun EditorScreen(
             }
         ),
         modifier = modifier
+    )
+    ExportFlow(
+        title = { viewModel.title.text.toString() },
+        content = { viewModel.text.text.toString() },
+        visible = exporting,
+        onDismiss = { exporting = false }
     )
 }
 
@@ -215,6 +224,14 @@ private fun OverflowMenu(state: EditorUiState, actions: EditorActions, onMove: (
             onClick = {
                 open = false
                 onMove()
+            }
+        )
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.export_note)) },
+            enabled = state.loaded,
+            onClick = {
+                open = false
+                actions.onExport()
             }
         )
         DropdownMenuItem(
@@ -337,5 +354,6 @@ class EditorActions(
     val onFormat: (FormatAction) -> Unit = {},
     val onToggleFavorite: () -> Unit = {},
     val onMove: (String) -> Unit = {},
+    val onExport: () -> Unit = {},
     val onDelete: () -> Unit = {}
 )

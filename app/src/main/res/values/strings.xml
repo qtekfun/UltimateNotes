@@ -175,4 +175,12 @@
     <string name="sync_now">Sync now</string>
     <string name="sync_in_progress">Syncing…</string>
     <string name="sync_failed">The last sync failed. Tap to retry</string>
+    <string name="export_note">Export…</string>
+    <string name="export_title">Export note</string>
+    <string name="export_share_markdown">Share as Markdown</string>
+    <string name="export_share_pdf">Share as PDF</string>
+    <string name="export_save_markdown">Save Markdown to a file</string>
+    <string name="export_save_pdf">Save PDF to a file</string>
+    <string name="export_cancel">Cancel</string>
+    <string name="export_failed">The note could not be exported.</string>
 </resources>
