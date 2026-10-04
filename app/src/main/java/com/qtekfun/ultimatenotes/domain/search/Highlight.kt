@@ -5,6 +5,7 @@ package com.qtekfun.ultimatenotes.domain.search
 
 import com.qtekfun.ultimatenotes.data.local.model.SearchMarkers
 import com.qtekfun.ultimatenotes.domain.TextRange
+import com.qtekfun.ultimatenotes.domain.markdown.PlainText
 
 /** A text to show on one line or two, with the parts that matched the search. */
 data class Highlighted(val text: String, val ranges: List<TextRange>) {
@@ -53,15 +54,15 @@ object Highlight {
 
     /**
      * Reads a snippet from the search engine, where matches sit between [SearchMarkers.OPEN] and
-     * [SearchMarkers.CLOSE]. The markers are removed and every run of whitespace, line breaks
-     * (also CRLF) included, becomes one space so the snippet fits a row. Unbalanced markers are
-     * tolerated: a match left open ends with the text.
+     * [SearchMarkers.CLOSE]. Markdown syntax is removed (see [PlainText]). The markers are removed
+     * and every run of whitespace, line breaks (also CRLF) included, becomes one space so the
+     * snippet fits a row. Unbalanced markers are tolerated: a match left open ends with the text.
      */
     fun snippet(marked: String): Highlighted {
         val out = StringBuilder()
         val ranges = mutableListOf<TextRange>()
         var open = -1
-        for (char in marked) {
+        for (char in PlainText.lines(marked).joinToString("\n")) {
             when {
                 char == SearchMarkers.OPEN[0] -> open = out.length
 

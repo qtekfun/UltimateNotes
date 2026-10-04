@@ -58,6 +58,8 @@ Recordatorios/notificaciones, etiquetas propias, colores de nota, adjuntos e im�
 - Barra de formato sobre el teclado. Autoguardado con debounce (~1 s) y al salir. Deshacer/rehacer.
 - **Decisión T02** (`docs/decisions/0001-editor.md`): un único `BasicTextField(TextFieldState)` cuyo contenido es el Markdown fuente, con estilo en `OutputTransformation`; análisis por rangos (commonmark-java, pendiente de confirmar) en `domain`. `compose-rich-editor` descartada (no lossless, sin checklists/citas). Fallback: modelo de bloques propio.
 - Checklists: tocar la casilla alterna `[ ]`/`[x]` también desde la vista de lista (previsualización) sin abrir el editor **(DEFECTO: solo dentro del editor en v1)**.
+- **Decisión (1.0):** el editor muestra los símbolos de Markdown (`##`, `**`) atenuados junto al texto con formato; no se ocultan. Es coherente con editar el fuente sin reserializar. Ocultarlos fuera de la línea del cursor (estilo "live preview") se valorará para 1.1 tras uso real.
+- **Listas y búsqueda:** las previsualizaciones y los fragmentos de búsqueda muestran texto plano (sin `**`, `#`, `- [ ]`, enlaces ni código); ver `domain/markdown/PlainText`.
 
 ## 7. Pantallas
 - **Onboarding/Login**: URL del servidor → Login Flow v2.

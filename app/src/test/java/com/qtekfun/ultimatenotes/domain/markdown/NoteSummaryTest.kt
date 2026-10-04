@@ -30,7 +30,7 @@ class NoteSummaryTest {
             "1234567890. too many digits|1234567890. too many digits",
             "-no space|-no space",
             "- [x]glued|[x]glued",
-            "**bold** start|**bold** start",
+            "**bold** start|bold start",
             "\t# tab indent|tab indent"
         ]
     )
@@ -68,7 +68,7 @@ class NoteSummaryTest {
     fun `preview drops the first line when it is the title`() {
         val text = "# Title\n\nFirst line\r\n- [ ] task\n\n> quote stays\n3. last"
         assertEquals(
-            "First line task > quote stays last",
+            "First line task quote stays last",
             NoteSummary.preview(text, title = "Title")
         )
     }
@@ -127,7 +127,7 @@ class NoteSummaryTest {
         assertEquals("Welcome to Nextcloud Notes", NoteSummary.firstLine(Corpus.load("welcome")))
         assertEquals("Shopping", NoteSummary.firstLine(Corpus.load("shopping-crlf")))
         assertEquals(
-            "Milk Eggs Free range Bread Coffee **dark** Don't forget the *bag*.",
+            "Milk Eggs Free range Bread Coffee dark Don't forget the bag.",
             NoteSummary.preview(Corpus.load("shopping-crlf"), title = "Shopping")
         )
         assertEquals("Viaje a Japón 🇯🇵", NoteSummary.firstLine(Corpus.load("unicode")))
