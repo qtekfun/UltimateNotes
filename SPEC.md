@@ -43,7 +43,7 @@ Recordatorios/notificaciones, etiquetas propias, colores de nota, adjuntos e im�
 - Soportado: párrafos, `#`–`###`, negrita, cursiva, tachado, listas con viñetas y numeradas, checklists (`- [ ]`/`- [x]`), citas, enlaces, código en línea.
 - Cualquier otra sintaxis se conserva literal (bloque "opaco") y se reserializa sin cambios.
 - Barra de formato sobre el teclado. Autoguardado con debounce (~1 s) y al salir. Deshacer/rehacer.
-- **Decisión pendiente T02:** librería de editor (p. ej. `compose-rich-editor`, licencia a verificar) vs. editor propio. Criterio: licencia GPLv3-compatible, fidelidad de ida y vuelta, mantenimiento.
+- **Decisión T02** (`docs/decisions/0001-editor.md`): un único `BasicTextField(TextFieldState)` cuyo contenido es el Markdown fuente, con estilo en `OutputTransformation`; análisis por rangos (commonmark-java, pendiente de confirmar) en `domain`. `compose-rich-editor` descartada (no lossless, sin checklists/citas). Fallback: modelo de bloques propio.
 - Checklists: tocar la casilla alterna `[ ]`/`[x]` también desde la vista de lista (previsualización) sin abrir el editor **(DEFECTO: solo dentro del editor en v1)**.
 
 ## 7. Pantallas
@@ -63,7 +63,7 @@ Recordatorios/notificaciones, etiquetas propias, colores de nota, adjuntos e im�
 - **Backup cifrado**: ajustes y cuenta (no las notas, que viven en el servidor). Copiado de UltimateTasks.
 
 ## 9. Decisiones técnicas abiertas
-- T02: librería/estrategia del editor (§6).
+- ~~T02: librería/estrategia del editor~~ resuelta, ver §6 y `docs/decisions/0001-editor.md`.
 - T03: cliente Retrofit vs OkHttp directo (por defecto Retrofit + kotlinx.serialization como Deck).
 - Reutilizar tal cual el módulo de Login Flow v2 de Tasks/Deck.
 
