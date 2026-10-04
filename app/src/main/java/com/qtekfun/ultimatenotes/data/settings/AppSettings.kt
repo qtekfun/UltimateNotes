@@ -4,6 +4,7 @@
 package com.qtekfun.ultimatenotes.data.settings
 
 import com.qtekfun.ultimatenotes.domain.list.NoteSortOrder
+import com.qtekfun.ultimatenotes.domain.lock.LockTimeout
 
 /** Preferences of this device (SPEC §7, Settings). */
 data class AppSettings(
@@ -17,5 +18,11 @@ data class AppSettings(
     /** How often the periodic background sync runs. */
     val syncInterval: SyncInterval = SyncInterval.HOUR,
     /** Connections the background syncs may use. */
-    val syncNetwork: SyncNetwork = SyncNetwork.ANY
+    val syncNetwork: SyncNetwork = SyncNetwork.ANY,
+    /** Biometric / device-credential lock of the whole app (SPEC §8); off by default. */
+    val appLockEnabled: Boolean = false,
+    /** Time in the background after which the app locks again. */
+    val lockTimeout: LockTimeout = LockTimeout.IMMEDIATELY,
+    /** FLAG_SECURE: hides content in the app switcher and blocks screenshots. */
+    val secureWindow: Boolean = false
 )

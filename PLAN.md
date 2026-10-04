@@ -25,7 +25,7 @@ Hitos: **M0** = CI con artefacto debug (T01) · **M1** = primera versión usable
 - [x] **T12 Búsqueda (M1)**: FTS offline desde la barra inferior, fragmentos resaltados, filtro por carpeta. **Al cerrar: pre-release `v0.1.0-rc.1` firmada y publicada.**
 
 ## Fase 4 — Extras
-- [ ] **T13 Biometría**: bloqueo global, timeout, `FLAG_SECURE` opcional.
+- [x] **T13 Biometría**: bloqueo global, timeout, `FLAG_SECURE` opcional.
 - [ ] **T14 Exportar**: `.md` y PDF.
 - [ ] **T15 Widget Glance**: recientes/favoritas + nota nueva, respeta bloqueo.
 - [ ] **T16 Backup cifrado (M2)** (copiar de Tasks).

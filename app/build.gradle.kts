@@ -306,6 +306,7 @@ dependencies {
 
     implementation(libs.hilt.android)
     implementation(libs.androidx.work.runtime)
+    implementation(libs.androidx.biometric)
     ksp(libs.hilt.compiler)
 
     implementation(libs.retrofit)
