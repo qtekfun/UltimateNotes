@@ -124,7 +124,6 @@
     <string name="lock_title">UltimateNotes is locked</string>
     <string name="lock_unlock">Unlock</string>
     <string name="lock_prompt_title">Unlock UltimateNotes</string>
-    <string name="lock_use_screen_lock">Use screen lock</string>
     <string name="editor_redo">Redo</string>
     <string name="editor_more">More options</string>
     <string name="editor_readonly">This note is read-only.</string>

@@ -4,7 +4,6 @@
 package com.qtekfun.ultimatenotes.ui.theme
 
 import android.app.Activity
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
@@ -71,12 +70,11 @@ internal fun ColorScheme.toAmoled() = copy(
 @Composable
 fun UltimateNotesTheme(options: ThemeOptions = ThemeOptions(), content: @Composable () -> Unit) {
     val context = LocalContext.current
-    val dynamic = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     val colorScheme = colorSchemeFor(
         options = options,
         systemDark = isSystemInDarkTheme(),
-        dynamicLight = if (dynamic) dynamicLightColorScheme(context) else null,
-        dynamicDark = if (dynamic) dynamicDarkColorScheme(context) else null
+        dynamicLight = dynamicLightColorScheme(context),
+        dynamicDark = dynamicDarkColorScheme(context)
     )
     SystemBarIcons(light = colorScheme.background.luminance() > LIGHT_BACKGROUND)
     MaterialTheme(colorScheme = colorScheme, content = content)

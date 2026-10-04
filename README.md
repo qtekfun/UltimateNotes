@@ -13,7 +13,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 [![CI](https://github.com/qtekfun/UltimateNotes/actions/workflows/ci.yml/badge.svg)](https://github.com/qtekfun/UltimateNotes/actions/workflows/ci.yml)
 [![License: GPL v3+](https://img.shields.io/badge/license-GPL--3.0--or--later-blue)](LICENSE)
-[![Android 8.0+](https://img.shields.io/badge/Android-8.0%2B-3DDC84?logo=android&logoColor=white)](#requirements)
+[![Android 12+](https://img.shields.io/badge/Android-12%2B-3DDC84?logo=android&logoColor=white)](#requirements)
 
 [<img src="https://img.shields.io/badge/Get%20it%20on-GitHub-181717?style=for-the-badge&logo=github" alt="Get it on GitHub" height="40">](https://github.com/qtekfun/UltimateNotes/releases)
 <!-- The F-Droid badge goes next to this one once the app is published there. -->
@@ -50,7 +50,7 @@ It needs a Nextcloud server with the **Notes** app installed. Not included: remi
 
 ## Requirements
 
-Android 8.0 (API 26) or newer, and a Nextcloud server with the Notes app.
+Android 12 (API 31) or newer, and a Nextcloud server with the Notes app.
 
 ## Build
 
@@ -79,6 +79,6 @@ Release and F-Droid steps are in [`RELEASING.md`](RELEASING.md).
 Cliente de notas moderno para **Nextcloud Notes**, con la experiencia de Apple Notes y sin conexión primero: carpetas, editor WYSIWYG que guarda Markdown, checklists, favoritas, búsqueda sin conexión, widget, bloqueo biométrico, exportación a Markdown y PDF y copia de seguridad cifrada. Software libre (GPL-3.0-or-later), sin servicios de Google, sin anuncios y sin telemetría.
 
 - **Instalar**: F-Droid cuando se publique; mientras tanto, el APK firmado de [GitHub Releases](https://github.com/qtekfun/UltimateNotes/releases).
-- **Requisitos**: Android 8.0 o superior y un servidor Nextcloud con la app Notes.
+- **Requisitos**: Android 12 o superior y un servidor Nextcloud con la app Notes.
 - **Compilar**: `./gradlew assembleDebug` y `./gradlew check` (JDK 21 y Android SDK).
 - Documentación: [`PRIVACY.md`](PRIVACY.md), [`SPEC.md`](SPEC.md), [`PLAN.md`](PLAN.md).

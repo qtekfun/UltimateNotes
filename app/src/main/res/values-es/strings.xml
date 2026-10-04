@@ -125,7 +125,6 @@
     <string name="lock_title">UltimateNotes está bloqueada</string>
     <string name="lock_unlock">Desbloquear</string>
     <string name="lock_prompt_title">Desbloquear UltimateNotes</string>
-    <string name="lock_use_screen_lock">Usar bloqueo de pantalla</string>
     <string name="editor_redo">Rehacer</string>
     <string name="editor_more">Más opciones</string>
     <string name="editor_readonly">Esta nota es de solo lectura.</string>
