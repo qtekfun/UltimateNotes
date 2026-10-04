@@ -12,7 +12,7 @@ Hitos: **M0** = CI con artefacto debug (T01) · **M1** = primera versión usable
 ## Fase 1 — Cuenta y datos
 - [ ] **T04 Login Flow v2 + Keystore** (copiar de Tasks/Deck con tests), detección de app Notes y versión de API.
 - [ ] **T05 Persistencia Room**: entidades, DAOs, FTS, migraciones (con tests de migración), tests en memoria.
-- [ ] **T06 Dominio Markdown**: modelo de bloques, parser/serializador con bloques opacos, parser de checklists, derivación de título. **100% cobertura** + corpus de ida y vuelta.
+- [x] **T06 Dominio Markdown**: modelo de bloques, parser/serializador con bloques opacos, parser de checklists, derivación de título. **100% cobertura** + corpus de ida y vuelta.
 
 ## Fase 2 — Sincronización
 - [ ] **T07 Cola de sync + resolutor de conflictos** (**100% cobertura**): estados, backoff, idempotencia, conflicto → copia local. Test de convergencia con secuencias aleatorias.
