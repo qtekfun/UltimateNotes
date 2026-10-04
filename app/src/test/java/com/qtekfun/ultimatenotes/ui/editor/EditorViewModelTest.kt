@@ -6,6 +6,7 @@ package com.qtekfun.ultimatenotes.ui.editor
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.text.TextRange
+import androidx.lifecycle.viewModelScope
 import com.qtekfun.ultimatenotes.data.local.entity.NoteEntity
 import com.qtekfun.ultimatenotes.data.local.inMemoryDatabase
 import com.qtekfun.ultimatenotes.data.local.model.SyncState
@@ -16,16 +17,21 @@ import com.qtekfun.ultimatenotes.domain.markdown.BlockKind
 import com.qtekfun.ultimatenotes.domain.markdown.FormatAction
 import com.qtekfun.ultimatenotes.domain.markdown.InlineStyle
 import com.qtekfun.ultimatenotes.domain.sync.SyncTrigger
+import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.spyk
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
@@ -54,14 +60,22 @@ class EditorViewModelTest {
     private companion object {
         val WAIT = 5.seconds
         const val POLL = 10L
-        const val SETTLE_ROUNDS = 5
     }
 
     @BeforeEach
     fun setUp() = Dispatchers.setMain(UnconfinedTestDispatcher())
 
+    /**
+     * The models of the test. Their view-model scope runs on Main and observes Room: it must be
+     * over, completions included, before Main is reset and the database closed. Otherwise a
+     * Room thread finishes it later, finds Main gone, and the exception is reported against
+     * whichever test runs next (the intermittent CI failure).
+     */
+    private val models = mutableListOf<EditorViewModel>()
+
     @AfterEach
     fun tearDown() {
+        runBlocking { models.forEach { it.viewModelScope.coroutineContext[Job]!!.cancelAndJoin() } }
         Dispatchers.resetMain()
         database.close()
     }
@@ -75,7 +89,7 @@ class EditorViewModelTest {
         ObserveFolders(dao),
         trigger,
         backgroundScope
-    )
+    ).also { models += it }
 
     private suspend fun synced(
         content: String = "hello",
@@ -122,13 +136,19 @@ class EditorViewModelTest {
         state.first { it.loaded }
     }
 
-    /** Lets queued coroutines run and, in real time, database threads finish. */
+    /**
+     * Runs queued coroutines until the model's scope has nothing left to do: every save, deletion
+     * and sync request it launched is over. Waits for that state (not for a fixed time), so a slow
+     * runner only makes it take longer. Needs the autosave stopped: call it after `close()`.
+     */
     private suspend fun TestScope.settle() {
-        repeat(SETTLE_ROUNDS) {
+        val deadline = System.nanoTime() + WAIT.inWholeNanoseconds
+        while (true) {
             runCurrent()
+            if (backgroundScope.coroutineContext[Job]!!.children.none { it.isActive }) return
+            check(System.nanoTime() < deadline) { "the model's coroutines did not finish" }
             withContext(Dispatchers.Default) { delay(POLL) }
         }
-        runCurrent()
     }
 
     /** Settles until [read] gives [expected] (or the wait is over), then asserts it. */
@@ -309,6 +329,32 @@ class EditorViewModelTest {
         assertEquals(SyncState.DIRTY, note.syncState)
         model.close()
         settle()
+        assertEquals(1, syncs)
+    }
+
+    @Test
+    fun `closing while the autosave is writing still asks for a sync`() = runTest {
+        val id = synced("body", title = "Old")
+        val model = model()
+        model.openAndWait(id)
+        val committed = CompletableDeferred<Unit>()
+        val release = CompletableDeferred<Unit>()
+        // The write reaches the database, then the save is held up (as a slow disk would).
+        coEvery { writer.update(any(), any(), any()) } coAnswers {
+            val wrote = NoteWriter(dao, clock) {
+                "New note"
+            }.update(firstArg(), secondArg(), thirdArg())
+            committed.complete(Unit)
+            release.await()
+            wrote
+        }
+        typeTitle(model, "Renamed")
+        advanceTimeBy(1_100)
+        committed.await()
+        model.close() // cancels the autosave in the middle of its write
+        release.complete(Unit)
+        settle()
+        assertEquals("Renamed", dao.get(id)!!.title)
         assertEquals(1, syncs)
     }
 
@@ -521,12 +567,11 @@ class EditorViewModelTest {
         model.openAndWait(first)
         typeInto(model, "one edited")
         model.openAndWait(second)
-        settle()
-        assertEquals("one edited", dao.get(first)!!.content)
         assertEquals("two", model.text.text.toString())
         assertFalse(model.text.undoState.canUndo)
         model.close()
         settle()
+        assertEquals("one edited", dao.get(first)!!.content)
     }
 
     @Test
@@ -536,8 +581,7 @@ class EditorViewModelTest {
         model.openAndWait(id)
         typeInto(model, "hello!")
         model.saveInBackground()
-        settle()
-        assertEquals("hello!", dao.get(id)!!.content)
+        eventually("hello!") { dao.get(id)!!.content }
         model.close()
         settle()
         model.saveNow()
