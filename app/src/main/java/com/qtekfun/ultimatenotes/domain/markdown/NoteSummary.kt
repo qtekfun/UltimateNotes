@@ -14,12 +14,6 @@ object NoteSummary {
     /** The server keeps at most this many characters of a title. */
     const val MAX_TITLE_LENGTH = 100
 
-    /** Leading syntax that is not content: indentation, `#`s, list markers, checklist boxes. */
-    private val LEADING_SYNTAX =
-        Regex(
-            """^[ \t]*(?:#{1,6}(?:[ \t]+|$)|[-*+](?:[ \t]+|$)(?:\[[ xX]](?:[ \t]+|$))?|\d{1,9}[.)](?:[ \t]+|$))"""
-        )
-
     /** Characters the server strips from titles because they are illegal in file names. */
     private val SERVER_STRIPPED = Regex("""[*|/\\:"<>?]""")
 
@@ -71,10 +65,8 @@ object NoteSummary {
         return actual == wanted || (wanted.length >= MAX_TITLE_LENGTH && actual.startsWith(wanted))
     }
 
-    private fun comparable(text: String): String = text.replace(LEADING_SYNTAX, "")
+    private fun comparable(text: String): String = text.replace(PlainText.LEADING_SYNTAX, "")
         .replace(SERVER_STRIPPED, "").replace(WHITESPACE, " ").trim()
 
-    private fun contentLines(text: String): Sequence<String> = text.lineSequence()
-        .map { it.replace(LEADING_SYNTAX, "").trim() }
-        .filter { it.isNotEmpty() }
+    private fun contentLines(text: String): Sequence<String> = PlainText.lines(text)
 }
