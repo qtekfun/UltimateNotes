@@ -52,4 +52,45 @@
     <string name="settings_language_hint">UltimateNotes uses the language of your device.</string>
     <string name="settings_about">About</string>
     <string name="settings_version">Version %1$s</string>
+    <string name="section_pinned">Pinned</string>
+    <string name="section_today">Today</string>
+    <string name="section_yesterday">Yesterday</string>
+    <string name="section_previous_7_days">Previous 7 days</string>
+    <string name="section_previous_30_days">Previous 30 days</string>
+    <string name="section_notes">Notes</string>
+    <string name="note_untitled">Untitled note</string>
+    <string name="note_no_preview">No additional text</string>
+    <string name="note_favorite">Favorite</string>
+    <string name="note_unfavorite">Remove from favorites</string>
+    <string name="note_is_favorite">Favorite note</string>
+    <string name="note_delete">Delete</string>
+    <string name="list_empty_hint">Tap the pencil to write one.</string>
+    <string name="list_empty_favorites">No favorite notes yet.</string>
+    <string name="list_empty_favorites_hint">Swipe a note to the right to add it here.</string>
+    <string name="list_empty_folder">This folder has no notes yet.</string>
+    <string name="list_more">More options</string>
+    <string name="list_sort_by">Sort by</string>
+    <string name="sort_modified">Date modified</string>
+    <string name="sort_title">Title</string>
+    <plurals name="selected_count">
+        <item quantity="one">%d selected</item>
+        <item quantity="other">%d selected</item>
+    </plurals>
+    <string name="select_close">Cancel selection</string>
+    <string name="select_all">Select all</string>
+    <string name="select_move">Move to folder</string>
+    <plurals name="notes_deleted">
+        <item quantity="one">Note deleted</item>
+        <item quantity="other">%d notes deleted</item>
+    </plurals>
+    <string name="undo">Undo</string>
+    <string name="move_title">Move to folder</string>
+    <string name="move_new_folder">New folder</string>
+    <string name="move_new_folder_hint">Use / for subfolders, like Work/Meetings.</string>
+    <string name="move_confirm">Move</string>
+    <string name="cancel">Cancel</string>
+    <string name="settings_list">Notes list</string>
+    <string name="settings_sort">Sort notes by</string>
+    <string name="editor_stub_title">Note</string>
+    <string name="editor_stub_message">The editor is coming soon.</string>
 </resources>

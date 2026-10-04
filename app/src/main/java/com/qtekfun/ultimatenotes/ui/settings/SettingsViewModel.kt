@@ -11,6 +11,7 @@ import com.qtekfun.ultimatenotes.data.settings.AppSettings
 import com.qtekfun.ultimatenotes.data.settings.SettingsRepository
 import com.qtekfun.ultimatenotes.data.settings.ThemeMode
 import com.qtekfun.ultimatenotes.domain.auth.Logout
+import com.qtekfun.ultimatenotes.domain.list.NoteSortOrder
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,6 +48,8 @@ class SettingsViewModel @Inject constructor(
     fun setAmoled(on: Boolean) = repository.setAmoled(on)
 
     fun setDynamicColor(on: Boolean) = repository.setDynamicColor(on)
+
+    fun setSortOrder(order: NoteSortOrder) = repository.setSortOrder(order)
 
     /** Signs out; the app then routes to the login screen by itself. */
     fun logOut() {

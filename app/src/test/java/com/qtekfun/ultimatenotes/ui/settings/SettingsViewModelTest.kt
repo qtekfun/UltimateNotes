@@ -15,6 +15,7 @@ import com.qtekfun.ultimatenotes.data.settings.FakePreferences
 import com.qtekfun.ultimatenotes.data.settings.SettingsRepository
 import com.qtekfun.ultimatenotes.data.settings.ThemeMode
 import com.qtekfun.ultimatenotes.domain.auth.Logout
+import com.qtekfun.ultimatenotes.domain.list.NoteSortOrder
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -54,9 +55,15 @@ class SettingsViewModelTest {
             model.setTheme(ThemeMode.DARK)
             model.setAmoled(true)
             model.setDynamicColor(false)
+            model.setSortOrder(NoteSortOrder.TITLE)
             val state = expectMostRecentItem()
             assertEquals(
-                AppSettings(ThemeMode.DARK, amoled = true, dynamicColor = false),
+                AppSettings(
+                    ThemeMode.DARK,
+                    amoled = true,
+                    dynamicColor = false,
+                    sortOrder = NoteSortOrder.TITLE
+                ),
                 state.settings
             )
             assertEquals(Account("https://cloud.example.com/", "ana"), state.account)

@@ -4,6 +4,7 @@
 package com.qtekfun.ultimatenotes.data.settings
 
 import app.cash.turbine.test
+import com.qtekfun.ultimatenotes.domain.list.NoteSortOrder
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -35,6 +36,23 @@ class SettingsRepositoryTest {
                 AppSettings(ThemeMode.DARK, amoled = true, dynamicColor = false),
                 awaitItem()
             )
+        }
+    }
+
+    @Test
+    fun `the sort order defaults to modified and is stored`() = runTest {
+        repository.settings.test {
+            assertEquals(NoteSortOrder.MODIFIED, awaitItem().sortOrder)
+            repository.setSortOrder(NoteSortOrder.TITLE)
+            assertEquals(NoteSortOrder.TITLE, awaitItem().sortOrder)
+        }
+    }
+
+    @Test
+    fun `an unknown stored sort order falls back to modified`() = runTest {
+        preferences.values["sort_order"] = "RANDOM"
+        repository.settings.test {
+            assertEquals(NoteSortOrder.MODIFIED, awaitItem().sortOrder)
         }
     }
 

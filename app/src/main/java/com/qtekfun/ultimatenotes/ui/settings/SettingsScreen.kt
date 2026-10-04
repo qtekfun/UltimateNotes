@@ -42,6 +42,8 @@ import com.qtekfun.ultimatenotes.R
 import com.qtekfun.ultimatenotes.data.auth.Account
 import com.qtekfun.ultimatenotes.data.settings.AppSettings
 import com.qtekfun.ultimatenotes.data.settings.ThemeMode
+import com.qtekfun.ultimatenotes.domain.list.NoteSortOrder
+import com.qtekfun.ultimatenotes.ui.main.sortLabel
 import com.qtekfun.ultimatenotes.ui.theme.UltimateNotesTheme
 
 private val ROW_MIN_HEIGHT = 56.dp
@@ -61,6 +63,7 @@ fun SettingsScreen(
         onTheme = viewModel::setTheme,
         onAmoled = viewModel::setAmoled,
         onDynamicColor = viewModel::setDynamicColor,
+        onSortOrder = viewModel::setSortOrder,
         onLogOut = viewModel::logOut,
         modifier = modifier
     )
@@ -77,6 +80,7 @@ fun SettingsContent(
     onTheme: (ThemeMode) -> Unit,
     onAmoled: (Boolean) -> Unit,
     onDynamicColor: (Boolean) -> Unit,
+    onSortOrder: (NoteSortOrder) -> Unit,
     onLogOut: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -109,6 +113,7 @@ fun SettingsContent(
                 onAmoled,
                 onDynamicColor
             )
+            ListSection(state.settings.sortOrder, onSortOrder)
             SectionHeader(R.string.settings_about)
             Text(
                 text = stringResource(R.string.settings_version, versionName),
@@ -192,6 +197,36 @@ private fun AppearanceSection(
 }
 
 @Composable
+private fun ListSection(sortOrder: NoteSortOrder, onSortOrder: (NoteSortOrder) -> Unit) {
+    SectionHeader(R.string.settings_list)
+    Text(
+        text = stringResource(R.string.settings_sort),
+        style = MaterialTheme.typography.bodyLarge,
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+    )
+    Column(Modifier.selectableGroup()) {
+        NoteSortOrder.entries.forEach { order ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = ROW_MIN_HEIGHT)
+                    .selectable(
+                        selected = sortOrder == order,
+                        role = Role.RadioButton,
+                        onClick = { onSortOrder(order) }
+                    )
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                RadioButton(selected = sortOrder == order, onClick = null)
+                Text(stringResource(sortLabel(order)))
+            }
+        }
+    }
+}
+
+@Composable
 private fun SectionHeader(title: Int) {
     Text(
         text = stringResource(title),
@@ -260,6 +295,7 @@ private fun SettingsPreview() {
             onTheme = {},
             onAmoled = {},
             onDynamicColor = {},
+            onSortOrder = {},
             onLogOut = {}
         )
     }
