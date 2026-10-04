@@ -6,6 +6,7 @@ package com.qtekfun.ultimatenotes.data.settings
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.qtekfun.ultimatenotes.domain.list.NoteSortOrder
+import com.qtekfun.ultimatenotes.domain.lock.LockTimeout
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -20,6 +21,9 @@ private const val KEY_DYNAMIC_COLOR = "dynamic_color"
 private const val KEY_SORT_ORDER = "sort_order"
 private const val KEY_SYNC_INTERVAL = "sync_interval"
 private const val KEY_SYNC_NETWORK = "sync_network"
+private const val KEY_APP_LOCK = "app_lock"
+private const val KEY_LOCK_TIMEOUT = "lock_timeout"
+private const val KEY_SECURE_WINDOW = "secure_window"
 
 /**
  * Per-device preferences. They are not note data, so they live in SharedPreferences rather than
@@ -54,12 +58,23 @@ class SettingsRepository @Inject constructor(
     fun setSyncNetwork(network: SyncNetwork) =
         preferences.edit { putString(KEY_SYNC_NETWORK, network.name) }
 
+    fun setAppLockEnabled(on: Boolean) = preferences.edit { putBoolean(KEY_APP_LOCK, on) }
+
+    fun setLockTimeout(timeout: LockTimeout) =
+        preferences.edit { putString(KEY_LOCK_TIMEOUT, timeout.name) }
+
+    fun setSecureWindow(on: Boolean) = preferences.edit { putBoolean(KEY_SECURE_WINDOW, on) }
+
+    /** The settings right now, for callers that cannot wait for the [settings] flow. */
+    val current: AppSettings get() = read()
+
     private fun read(): AppSettings {
         val defaults = AppSettings()
         val theme = preferences.getString(KEY_THEME, null)
         val sortOrder = preferences.getString(KEY_SORT_ORDER, null)
         val interval = preferences.getString(KEY_SYNC_INTERVAL, null)
         val network = preferences.getString(KEY_SYNC_NETWORK, null)
+        val lockTimeout = preferences.getString(KEY_LOCK_TIMEOUT, null)
         return AppSettings(
             theme = ThemeMode.entries.firstOrNull { it.name == theme } ?: defaults.theme,
             amoled = preferences.getBoolean(KEY_AMOLED, defaults.amoled),
@@ -69,7 +84,11 @@ class SettingsRepository @Inject constructor(
             syncInterval = SyncInterval.entries.firstOrNull { it.name == interval }
                 ?: defaults.syncInterval,
             syncNetwork = SyncNetwork.entries.firstOrNull { it.name == network }
-                ?: defaults.syncNetwork
+                ?: defaults.syncNetwork,
+            appLockEnabled = preferences.getBoolean(KEY_APP_LOCK, defaults.appLockEnabled),
+            lockTimeout = LockTimeout.entries.firstOrNull { it.name == lockTimeout }
+                ?: defaults.lockTimeout,
+            secureWindow = preferences.getBoolean(KEY_SECURE_WINDOW, defaults.secureWindow)
         )
     }
 
