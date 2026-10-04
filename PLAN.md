@@ -15,7 +15,7 @@ Hitos: **M0** = CI con artefacto debug (T01) · **M1** = primera versión usable
 - [x] **T06 Dominio Markdown**: modelo de bloques, parser/serializador con bloques opacos, parser de checklists, derivación de título. **100% cobertura** + corpus de ida y vuelta.
 
 ## Fase 2 — Sincronización
-- [ ] **T07 Cola de sync + resolutor de conflictos** (**100% cobertura**): estados, backoff, idempotencia, conflicto → copia local. Test de convergencia con secuencias aleatorias.
+- [x] **T07 Cola de sync + resolutor de conflictos** (**100% cobertura**): estados, backoff, idempotencia, conflicto → copia local. Test de convergencia con secuencias aleatorias.
 - [ ] **T08 Workers**: sync al abrir/guardar/periódica/manual, red restringida configurable.
 
 ## Fase 3 — UI (calco Apple Notes)
