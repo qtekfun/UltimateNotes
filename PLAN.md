@@ -28,7 +28,7 @@ Hitos: **M0** = CI con artefacto debug (T01) · **M1** = primera versión usable
 - [x] **T13 Biometría**: bloqueo global, timeout, `FLAG_SECURE` opcional.
 - [ ] **T14 Exportar**: `.md` y PDF.
 - [ ] **T15 Widget Glance**: recientes/favoritas + nota nueva, respeta bloqueo.
-- [ ] **T16 Backup cifrado (M2)** (copiar de Tasks).
+- [x] **T16 Backup cifrado (M2)** (copiar de Tasks).
 
 ## Fase 5 — Calidad y cierre
 - [ ] **T17 Tests de UI instrumentados** de todos los flujos clave (SPEC §11) en la matriz de dispositivos; accesibilidad (fuente grande, TalkBack) y rendimiento (5 000 notas).
