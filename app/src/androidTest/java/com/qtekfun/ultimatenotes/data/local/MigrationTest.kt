@@ -7,8 +7,11 @@ import androidx.room3.testing.MigrationTestHelper
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.sqlite.execSQL
 import androidx.test.platform.app.InstrumentationRegistry
+import java.io.File
 import kotlinx.coroutines.runBlocking
+import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -18,11 +21,21 @@ import org.junit.Test
  * the previous version, inserts a note, migrates and checks the note survived.
  */
 class MigrationTest {
+    // The file survives the run (the helper does not delete it), so a second run on the same
+    // device found it and refused to create the schema: start from nothing, and leave nothing.
+    private val file = InstrumentationRegistry.getInstrumentation().targetContext
+        .getDatabasePath("migration-test.db")
+
+    @Before
+    @After
+    fun deleteTheDatabaseFiles() {
+        listOf("", "-wal", "-shm", "-journal").forEach { File(file.path + it).delete() }
+    }
+
     @get:Rule
     val helper = MigrationTestHelper(
         instrumentation = InstrumentationRegistry.getInstrumentation(),
-        file = InstrumentationRegistry.getInstrumentation().targetContext
-            .getDatabasePath("migration-test.db"),
+        file = file,
         driver = BundledSQLiteDriver(),
         databaseClass = UltimateNotesDatabase::class
     )

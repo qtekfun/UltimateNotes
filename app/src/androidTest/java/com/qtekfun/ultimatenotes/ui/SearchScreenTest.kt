@@ -3,8 +3,11 @@
 
 package com.qtekfun.ultimatenotes.ui
 
+import android.view.WindowManager
+import androidx.activity.ComponentActivity
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -23,16 +26,35 @@ import com.qtekfun.ultimatenotes.ui.search.SearchUiState
 import com.qtekfun.ultimatenotes.ui.theme.UltimateNotesTheme
 import java.time.Instant
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
 /** Compiled by `check`, run on a device: typing, results, scope chips, empty states and closing. */
 class SearchScreenTest {
     @get:Rule
-    val compose = createComposeRule()
+    val compose = createAndroidComposeRule<ComponentActivity>()
 
-    private fun text(id: Int) =
-        InstrumentationRegistry.getInstrumentation().targetContext.getString(id)
+    /**
+     * Like MainActivity (edge to edge, `adjustResize`): the screen pads itself by the keyboard
+     * insets. In a plain test activity the window instead pans up when the (auto-focused) field
+     * opens the keyboard, which moves the chips and the results off screen and fails
+     * `assertIsDisplayed`.
+     */
+    @Suppress("DEPRECATION") // the same flag MainActivity's manifest sets
+    @Before
+    fun behaveLikeTheMainActivity() {
+        compose.runOnUiThread {
+            compose.activity.enableEdgeToEdge()
+            compose.activity.window.setSoftInputMode(
+                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING
+            )
+        }
+    }
+
+    /** The string in the device's language: the tests must pass in English and in Spanish. */
+    private fun text(id: Int, vararg args: Any) =
+        InstrumentationRegistry.getInstrumentation().targetContext.getString(id, *args)
 
     private val result = SearchResult(
         localId = 7,
@@ -62,10 +84,12 @@ class SearchScreenTest {
         }
 
         compose.onNodeWithText(text(R.string.search_placeholder)).performTextInput("caf")
+        // Checked before the click: the screen under test holds a fixed (empty) query, so the field
+        // reports the reset to "" when it loses focus.
+        assertEquals("caf", typed)
         compose.onNodeWithText("Food").assertIsDisplayed()
         compose.onNodeWithText("Café menu", substring = true).performClick()
 
-        assertEquals("caf", typed)
         assertEquals(7L, opened)
     }
 
@@ -82,7 +106,7 @@ class SearchScreenTest {
         }
 
         compose.onNodeWithText(text(R.string.folder_all)).assertIsDisplayed()
-        compose.onNodeWithText("In Work").performClick()
+        compose.onNodeWithText(text(R.string.search_scope_folder, "Work")).performClick()
 
         assertEquals(SearchScope.FOLDER, scope)
     }

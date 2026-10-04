@@ -3,13 +3,16 @@
 
 package com.qtekfun.ultimatenotes.screenshots
 
+import android.accessibilityservice.AccessibilityService
 import android.app.LocaleManager
 import android.content.Context
 import android.graphics.Bitmap
 import android.os.Build
 import android.os.LocaleList
 import androidx.annotation.StringRes
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -28,12 +31,14 @@ import com.qtekfun.ultimatenotes.data.settings.SettingsRepository
 import com.qtekfun.ultimatenotes.data.settings.ThemeMode
 import com.qtekfun.ultimatenotes.di.DatabaseModule
 import com.qtekfun.ultimatenotes.di.SettingsModule
+import com.qtekfun.ultimatenotes.sync.work.SyncStatusStore
 import com.qtekfun.ultimatenotes.ui.MainActivity
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
 import java.io.File
 import java.time.Clock
+import java.time.Instant
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -64,6 +69,8 @@ class ScreenshotTest {
 
     @Inject lateinit var settings: SettingsRepository
 
+    @Inject lateinit var syncStatus: SyncStatusStore
+
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
     private val context: Context = instrumentation.targetContext
     private var scenario: ActivityScenario<MainActivity>? = null
@@ -82,6 +89,9 @@ class ScreenshotTest {
         // The system look is not ours to choose: fixed colors, light until the dark screenshot.
         settings.setDynamicColor(false)
         settings.setTheme(ThemeMode.LIGHT)
+        // The last sync error is kept in the app's own preferences (a previous run on this device
+        // may have left one, which would paint the sync button red): show a clean sync instead.
+        syncStatus.markSynced(Instant.now())
         localeManager().let { previousLocales = it.applicationLocales }
     }
 
@@ -114,14 +124,17 @@ class ScreenshotTest {
         compose.onNodeWithContentDescription(string(R.string.folders_open)).performClick()
         awaitText(R.string.folders_settings)
         shoot(output, "2_folders")
-        onActivity { it.onBackPressedDispatcher.onBackPressed() }
+        // Choosing "All notes" (already selected) closes the drawer, like tapping any folder.
+        compose.onNode(hasText(string(R.string.folder_all)) and hasClickAction()).performClick()
+        // The drawer stays composed when closed, so there is nothing to wait for: let it slide.
         compose.waitForIdle()
+        Thread.sleep(SETTLE_MILLIS)
 
         // 3. The editor: headings, bold, italic and a checklist with some items checked.
         compose.onNodeWithText(demo.editorTitle).performClick()
         awaitGone(R.string.section_pinned)
         shoot(output, "3_editor")
-        onActivity { it.onBackPressedDispatcher.onBackPressed() }
+        pressBack()
         awaitText(R.string.section_pinned)
 
         // 4. The search results, with the highlighted match and the bottom bar.
@@ -175,15 +188,32 @@ class ScreenshotTest {
     private fun awaitText(@StringRes id: Int) {
         val text = string(id)
         compose.waitUntil(WAIT_MILLIS) {
-            compose.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
+            hasNodes(text)
         }
+    }
+
+    /**
+     * Whether a node with [text] is on screen. Right after a launch or a recreation the root's
+     * composition is not registered with the test rule yet, which it reports as an exception.
+     */
+    private fun hasNodes(text: String): Boolean = try {
+        compose.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
+    } catch (_: IllegalStateException) {
+        false
     }
 
     private fun awaitGone(@StringRes id: Int) {
         val text = string(id)
         compose.waitUntil(WAIT_MILLIS) {
-            compose.onAllNodesWithText(text).fetchSemanticsNodes().isEmpty()
+            !hasNodes(text)
         }
+    }
+
+    /** The system Back, as a user's gesture would (drawer, editor and search all listen to it). */
+    private fun pressBack() {
+        instrumentation.uiAutomation.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK)
+        compose.waitForIdle()
+        Thread.sleep(SETTLE_MILLIS)
     }
 
     private fun hideKeyboard() {
