@@ -10,8 +10,8 @@ import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.SemanticsNodeInteractionCollection
-import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.isRoot
+import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.text.TextLayoutResult
 import org.junit.Assert.assertTrue
 
@@ -27,7 +27,10 @@ class LayoutChecks(private val compose: ComposeTestRule) {
     private fun SemanticsNodeInteraction.bounds(): Rect = fetchSemanticsNode().boundsInRoot
 
     /** Every control is fully inside the window (not clipped by the screen edge). */
-    fun assertInsideWindow(screen: String, vararg controls: Pair<String, SemanticsNodeInteraction>) {
+    fun assertInsideWindow(
+        screen: String,
+        vararg controls: Pair<String, SemanticsNodeInteraction>
+    ) {
         val screenBounds = window()
         for ((name, control) in controls) {
             val bounds = control.bounds()

@@ -176,14 +176,20 @@ class RotationTest : DeviceTestBase() {
         rotate(landscape = true)
         shoot("rotation_3_favorites_landscape")
         assertTrue(hasNodesWithText("Lisbon trip plan"))
-        assertFalse("the folder is kept: Fluffy pancakes must stay hidden", hasNodesWithText("Fluffy pancakes"))
+        assertFalse(
+            "the folder is kept: Fluffy pancakes must stay hidden",
+            hasNodesWithText("Fluffy pancakes")
+        )
 
         // Rotating with the drawer open keeps it open.
         openDrawer()
         rotate(landscape = false)
         awaitText(string(R.string.folders_settings))
         shoot("rotation_4_drawer_portrait")
-        assertTrue("the drawer was closed by the rotation", hasNodesWithText(string(R.string.folders_settings)))
+        assertTrue(
+            "the drawer was closed by the rotation",
+            hasNodesWithText(string(R.string.folders_settings))
+        )
         closeDrawerByChoosingAllNotes()
         awaitText("Fluffy pancakes")
     }
@@ -199,13 +205,19 @@ class RotationTest : DeviceTestBase() {
         rotate(landscape = true)
         awaitText("Lemon cake")
         shoot("rotation_5_search_landscape")
-        assertEquals("lemon", compose.onNode(hasSetTextAction()).fetchSemanticsNode()
-            .config[SemanticsProperties.InputText].text)
+        assertEquals(
+            "lemon",
+            compose.onNode(hasSetTextAction()).fetchSemanticsNode()
+                .config[SemanticsProperties.InputText].text
+        )
 
         rotate(landscape = false)
         awaitText("Lemon cake")
-        assertEquals("lemon", compose.onNode(hasSetTextAction()).fetchSemanticsNode()
-            .config[SemanticsProperties.InputText].text)
+        assertEquals(
+            "lemon",
+            compose.onNode(hasSetTextAction()).fetchSemanticsNode()
+                .config[SemanticsProperties.InputText].text
+        )
 
         // Open a result, rotate inside the editor, and come back to the same search.
         compose.onNodeWithText("Lemon cake").performClick()
@@ -216,8 +228,11 @@ class RotationTest : DeviceTestBase() {
         rotate(landscape = false)
         pressBack()
         awaitText("Lemon cake")
-        assertEquals("lemon", compose.onNode(hasSetTextAction()).fetchSemanticsNode()
-            .config[SemanticsProperties.InputText].text)
+        assertEquals(
+            "lemon",
+            compose.onNode(hasSetTextAction()).fetchSemanticsNode()
+                .config[SemanticsProperties.InputText].text
+        )
     }
 
     @Test

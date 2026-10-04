@@ -6,16 +6,16 @@ package com.qtekfun.ultimatenotes.quality
 import android.util.Log
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasAnyDescendant
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasScrollAction
-import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.test.platform.app.InstrumentationRegistry
 import com.qtekfun.ultimatenotes.R
@@ -88,7 +88,9 @@ class FontScaleTest : DeviceTestBase() {
         checks.assertInsideWindow("drawer", "all" to all, "settings" to settings)
         checks.assertNoOverlap("drawer", "all" to all, "settings" to settings)
         // The folder rows scroll: the last one can be brought into view.
-        compose.onAllNodes(hasScrollAction() and hasAnyDescendant(hasText(string(R.string.folder_all))))
+        compose.onAllNodes(
+            hasScrollAction() and hasAnyDescendant(hasText(string(R.string.folder_all)))
+        )
             .onFirst().performScrollToNode(hasText("Recipes"))
         val drawerRight = settings.fetchSemanticsNode().boundsInRoot.right
         val reached = compose.onAllNodes(hasText("Recipes")).fetchSemanticsNodes()
@@ -96,7 +98,10 @@ class FontScaleTest : DeviceTestBase() {
         assertTrue("the last drawer folder was not brought into view", reached)
         // The labels of the rows are not cut off.
         val rows = compose.onAllNodes(hasClickAction())
-        assertTrue("drawer labels cut off: ${checks.overflowing(rows)}", checks.overflowing(rows).isEmpty())
+        assertTrue(
+            "drawer labels cut off: ${checks.overflowing(rows)}",
+            checks.overflowing(rows).isEmpty()
+        )
     }
 
     @Test

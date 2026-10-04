@@ -76,7 +76,10 @@ class AccessibilityAuditTest : DeviceTestBase() {
 
     private fun assertClean(screen: String) {
         val errors = audit(screen)
-        assertTrue("accessibility errors on $screen:\n" + errors.joinToString("\n"), errors.isEmpty())
+        assertTrue(
+            "accessibility errors on $screen:\n" + errors.joinToString("\n"),
+            errors.isEmpty()
+        )
     }
 
     private fun clickables(): List<SemanticsNode> =
@@ -169,7 +172,9 @@ class AccessibilityAuditTest : DeviceTestBase() {
         assertAllControlsAreLabelled("settings")
         // Switches and radio rows expose their state and role, not only a label.
         val toggles = compose.onAllNodes(
-            androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(SemanticsProperties.ToggleableState)
+            androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(
+                SemanticsProperties.ToggleableState
+            )
         ).fetchSemanticsNodes()
         val selectable = compose.onAllNodes(
             androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(SemanticsProperties.Selected)

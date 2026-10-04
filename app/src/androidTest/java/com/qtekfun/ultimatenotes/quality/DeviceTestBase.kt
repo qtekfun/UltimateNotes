@@ -108,7 +108,8 @@ abstract class DeviceTestBase {
         return started
     }
 
-    protected fun string(@StringRes id: Int, vararg args: Any): String = context.getString(id, *args)
+    protected fun string(@StringRes id: Int, vararg args: Any): String =
+        context.getString(id, *args)
 
     protected fun activity(): Activity {
         var current: Activity? = null
@@ -118,16 +119,12 @@ abstract class DeviceTestBase {
 
     /** Waits for [condition], tolerating the instants where no composition is registered. */
     protected fun await(millis: Long = WAIT_MILLIS, condition: () -> Boolean) {
-        try {
-            compose.waitUntil(millis) {
-                try {
-                    condition()
-                } catch (_: IllegalStateException) {
-                    false
-                }
+        compose.waitUntil(millis) {
+            try {
+                condition()
+            } catch (_: IllegalStateException) {
+                false
             }
-        } catch (timeout: androidx.compose.ui.test.ComposeTimeoutException) {
-            throw timeout
         }
     }
 
