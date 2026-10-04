@@ -69,7 +69,8 @@ fun SettingsScreen(
         onLogOut = viewModel::logOut,
         onSyncInterval = viewModel::setSyncInterval,
         onSyncNetwork = viewModel::setSyncNetwork,
-        modifier = modifier
+        modifier = modifier,
+        extraSections = { LockSettingsSection() }
     )
 }
 
@@ -88,7 +89,8 @@ fun SettingsContent(
     onLogOut: () -> Unit,
     modifier: Modifier = Modifier,
     onSyncInterval: (SyncInterval) -> Unit = {},
-    onSyncNetwork: (SyncNetwork) -> Unit = {}
+    onSyncNetwork: (SyncNetwork) -> Unit = {},
+    extraSections: @Composable () -> Unit = {}
 ) {
     Scaffold(
         modifier = modifier,
@@ -121,6 +123,7 @@ fun SettingsContent(
             )
             ListSection(state.settings.sortOrder, onSortOrder)
             SyncSection(state.settings, onSyncInterval, onSyncNetwork)
+            extraSections()
             SectionHeader(R.string.settings_about)
             Text(
                 text = stringResource(R.string.settings_version, versionName),
@@ -271,12 +274,23 @@ internal fun OptionRow(label: Int, selected: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-private fun SwitchRow(title: Int, hint: Int, checked: Boolean, onChange: (Boolean) -> Unit) {
+internal fun SwitchRow(
+    title: Int,
+    hint: Int,
+    checked: Boolean,
+    onChange: (Boolean) -> Unit,
+    enabled: Boolean = true
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = ROW_MIN_HEIGHT)
-            .toggleable(value = checked, role = Role.Switch, onValueChange = onChange)
+            .toggleable(
+                value = checked,
+                enabled = enabled,
+                role = Role.Switch,
+                onValueChange = onChange
+            )
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -289,7 +303,7 @@ private fun SwitchRow(title: Int, hint: Int, checked: Boolean, onChange: (Boolea
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        Switch(checked = checked, onCheckedChange = null)
+        Switch(checked = checked, onCheckedChange = null, enabled = enabled)
     }
 }
 
