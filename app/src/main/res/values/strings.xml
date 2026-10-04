@@ -143,6 +143,8 @@
     <string name="format_quote">Quote</string>
     <string name="format_link">Link</string>
     <string name="format_code">Inline code</string>
+    <string name="format_open_link">Open link</string>
+    <string name="link_no_app">No app can open this link</string>
     <string name="settings_backup">Backup</string>
     <string name="backup_export">Back up</string>
     <string name="backup_export_hint">Save your settings and account in a file protected by a passphrase.</string>

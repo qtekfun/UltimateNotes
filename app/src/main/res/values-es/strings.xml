@@ -144,6 +144,8 @@
     <string name="format_quote">Cita</string>
     <string name="format_link">Enlace</string>
     <string name="format_code">Código en línea</string>
+    <string name="format_open_link">Abrir enlace</string>
+    <string name="link_no_app">Ninguna aplicación puede abrir este enlace</string>
     <string name="settings_backup">Copia de seguridad</string>
     <string name="backup_export">Hacer copia</string>
     <string name="backup_export_hint">Guarda tus ajustes y tu cuenta en un archivo protegido con una frase de contraseña.</string>
