@@ -36,6 +36,20 @@ interface NoteDao {
     )
     fun observeByFolder(folder: String): Flow<List<NoteEntity>>
 
+    /** The first [limit] notes in list order (favorites first), for the widget. */
+    @Query(
+        "SELECT * FROM note WHERE syncState != 'DELETED' " +
+            "ORDER BY favorite DESC, modified DESC, localId DESC LIMIT :limit"
+    )
+    suspend fun recent(limit: Int): List<NoteEntity>
+
+    /** Same as [recent], kept current, so the widget can follow note and sync changes. */
+    @Query(
+        "SELECT * FROM note WHERE syncState != 'DELETED' " +
+            "ORDER BY favorite DESC, modified DESC, localId DESC LIMIT :limit"
+    )
+    fun observeRecent(limit: Int): Flow<List<NoteEntity>>
+
     @Query(
         "SELECT * FROM note WHERE syncState != 'DELETED' AND favorite = 1 " +
             "ORDER BY modified DESC, localId DESC"
