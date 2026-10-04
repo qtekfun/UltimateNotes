@@ -58,6 +58,7 @@ fun Modifier.toggleCheckboxOnTap(
     }
 }
 
+@Suppress("LongParameterList")
 private fun boxAt(
     position: Offset,
     state: TextFieldState,

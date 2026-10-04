@@ -70,13 +70,8 @@ private fun styledState(text: String, start: Int, end: Int, style: InlineStyle):
     val lead = style.runAfter(text, start, end)
     val trail = style.runBefore(text, end).coerceAtMost(end - start)
     val hasContent = lead + trail < end - start
-    return if (hasContent && style.isActiveFor(lead) &&
-        style.isActiveFor(trail)
-    ) {
-        Op.UnwrapInside
-    } else {
-        null
-    }
+    val wrappedInside = hasContent && style.isActiveFor(lead) && style.isActiveFor(trail)
+    return Op.UnwrapInside.takeIf { wrappedInside }
 }
 
 private fun apply(text: String, pieces: List<Piece>, style: InlineStyle): EditResult {
@@ -85,43 +80,19 @@ private fun apply(text: String, pieces: List<Piece>, style: InlineStyle): EditRe
     val m = marker.length
     val out = StringBuilder()
     var cursor = 0
-    var selStart = -1
+    var selStart = 0
     var selEnd = 0
-    for ((start, end, op) in pieces) {
-        when (op) {
-            Op.Wrap -> {
-                out.append(text, cursor, start).append(marker)
-                if (selStart < 0) selStart = out.length
-                out.append(text, start, end)
-                selEnd = out.length
-                out.append(marker)
-                cursor = end
-            }
-
-            Op.UnwrapOutside -> {
-                out.append(text, cursor, start - m)
-                if (selStart < 0) selStart = out.length
-                out.append(text, start, end)
-                selEnd = out.length
-                cursor = end + m
-            }
-
-            Op.UnwrapInside -> {
-                out.append(text, cursor, start)
-                if (selStart < 0) selStart = out.length
-                out.append(text, start + m, end - m)
-                selEnd = out.length
-                cursor = end
-            }
-
-            Op.Keep -> {
-                out.append(text, cursor, start)
-                if (selStart < 0) selStart = out.length
-                out.append(text, start, end)
-                selEnd = out.length
-                cursor = end
-            }
-        }
+    for ((index, piece) in pieces.withIndex()) {
+        val (start, end, op) = piece
+        val outer = if (op == Op.UnwrapOutside) m else 0
+        out.append(text, cursor, start - outer)
+        if (op == Op.Wrap) out.append(marker)
+        if (index == 0) selStart = out.length
+        val inner = if (op == Op.UnwrapInside) m else 0
+        out.append(text, start + inner, end - inner)
+        selEnd = out.length
+        if (op == Op.Wrap) out.append(marker)
+        cursor = end + outer
     }
     out.append(text, cursor, text.length)
     return EditResult(out.toString(), TextRange(selStart, selEnd))

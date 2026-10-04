@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.Flow
  * and put favorites first, then the most recently modified.
  */
 @Dao
+@Suppress("TooManyFunctions") // one query per list, plus the editor's transactional write
 interface NoteDao {
     @Query(
         "SELECT * FROM note WHERE syncState != 'DELETED' " +
@@ -78,9 +79,8 @@ interface NoteDao {
      */
     @Transaction
     suspend fun modify(localId: Long, change: (NoteEntity) -> NoteEntity?): Boolean {
-        val current = get(localId) ?: return false
-        val changed = change(current) ?: return false
-        update(changed)
-        return true
+        val changed = get(localId)?.let(change)
+        if (changed != null) update(changed)
+        return changed != null
     }
 }

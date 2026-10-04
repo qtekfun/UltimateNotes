@@ -165,4 +165,15 @@ class BlockFormatTest {
         val result = setBlock("a\n\n\nb", TextRange(2, 3), BlockKind.Bullet)
         assertEquals("a\n- \n\nb", result.text)
     }
+
+    @Test
+    fun `tab indentation of a plain line is kept`() {
+        assertEquals("\t- a|", block("\ta|", BlockKind.Bullet))
+    }
+
+    @Test
+    fun `a range of only blank lines changes nothing`() {
+        val result = setBlock("\n\n\n", TextRange(0, 2), BlockKind.Bullet)
+        assertEquals(EditResult("\n\n\n", TextRange(0, 2)), result)
+    }
 }

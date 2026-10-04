@@ -153,4 +153,34 @@ class StyleRunsTest {
         @JvmStatic
         fun corpus() = Corpus.names
     }
+
+    @Test
+    fun `an empty heading and lazy quote lines are handled`() {
+        assertEquals(listOf(StyleRole.Heading(1) to "#", StyleRole.Marker to "#"), runs("#"))
+        assertEquals(
+            listOf(StyleRole.Quote to "> a", StyleRole.Marker to "> ", StyleRole.Quote to "b"),
+            runs("> a\nb")
+        )
+    }
+
+    @Test
+    fun `a reference link only gets its own run`() {
+        assertEquals(
+            listOf(StyleRole.Link to "[a][r]"),
+            runs("[a][r]\n\n[r]: http://x")
+        )
+    }
+
+    @Test
+    fun `no run is ever empty`() {
+        for (name in Corpus.names) {
+            val text = Corpus.load(name)
+            assertTrue(
+                StyleRuns.of(text, MarkdownAnalyzer.analyze(text)).none {
+                    it.range.start ==
+                        it.range.end
+                }
+            )
+        }
+    }
 }

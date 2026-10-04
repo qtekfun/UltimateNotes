@@ -94,9 +94,8 @@ object StyleRuns {
 
     private fun heading(text: String, range: TextRange, level: Int, out: MutableList<StyleRun>) {
         out += StyleRun(range, StyleRole.Heading(level))
-        var end = range.start
-        while (end < range.end && text[end] == '#') end++
-        if (end > range.start) out += StyleRun(TextRange(range.start, end), StyleRole.Marker)
+        val hashes = text.substring(range.start, range.end).takeWhile { it == '#' }.length
+        out += StyleRun(TextRange(range.start, range.start + hashes), StyleRole.Marker)
     }
 
     private fun quote(text: String, range: TextRange, out: MutableList<StyleRun>) {
@@ -104,21 +103,19 @@ object StyleRuns {
         while (true) {
             val start = maxOf(line.start, range.start)
             val end = minOf(line.end, range.end)
-            if (start < end) {
-                out += StyleRun(TextRange(start, end), StyleRole.Quote)
-                QUOTE_MARKER.find(text.substring(start, end))?.let {
-                    out += StyleRun(TextRange(start, start + it.value.length), StyleRole.Marker)
-                }
+            out += StyleRun(TextRange(start, end), StyleRole.Quote)
+            QUOTE_MARKER.find(text.substring(start, end))?.let {
+                out += StyleRun(TextRange(start, start + it.value.length), StyleRole.Marker)
             }
-            if (line.next >= range.end || line.next == line.start) return
+            if (line.next >= range.end) return
             line = lineAt(text, line.next)
         }
     }
 
     private fun listMarker(text: String, start: Int, out: MutableList<StyleRun>) {
-        LIST_MARKER.matchAt(text, start)?.let {
-            out += StyleRun(TextRange(start, start + it.value.length), StyleRole.Marker)
-        }
+        // An item's span may begin with indentation or quote marks; its marker is the first one after.
+        val marker = LIST_MARKER.find(text, start)!!
+        out += StyleRun(TextRange(marker.range.first, marker.range.last + 1), StyleRole.Marker)
     }
 
     private fun checklist(
@@ -129,8 +126,7 @@ object StyleRuns {
     ) {
         val box = kind.box
         if (kind.checked) {
-            val lineEnd = lineAt(text, box.end.coerceAtMost(text.length)).end
-            out += StyleRun(TextRange(box.end, maxOf(box.end, lineEnd)), StyleRole.Done)
+            out += StyleRun(TextRange(box.end, lineAt(text, box.end).end), StyleRole.Done)
         }
         listMarker(text, range.start, out)
         out += StyleRun(box, StyleRole.Checkbox(kind.checked))
@@ -138,22 +134,20 @@ object StyleRuns {
 
     private fun inline(range: TextRange, role: StyleRole, marker: Int, out: MutableList<StyleRun>) {
         out += StyleRun(range, role)
-        if (marker > 0 && range.end - range.start > 2 * marker) {
-            out += StyleRun(TextRange(range.start, range.start + marker), StyleRole.Marker)
-            out += StyleRun(TextRange(range.end - marker, range.end), StyleRole.Marker)
-        }
+        out += StyleRun(TextRange(range.start, range.start + marker), StyleRole.Marker)
+        out += StyleRun(TextRange(range.end - marker, range.end), StyleRole.Marker)
     }
 
     private fun markerRun(text: String, range: TextRange, char: Char): Int {
-        var n = 0
-        while (range.start + n < range.end && text[range.start + n] == char) n++
-        return if (n * 2 < range.end - range.start) n else 0
+        val run = text.substring(range.start, range.end).takeWhile { it == char }.length
+        // At least one character of content stays between the markers.
+        return minOf(run, (range.end - range.start - 1) / 2)
     }
 
     private fun link(text: String, range: TextRange, out: MutableList<StyleRun>) {
         out += StyleRun(range, StyleRole.Link)
         val target = text.lastIndexOf("](", range.end - 1)
-        if (text.getOrNull(range.start) == '[' && target > range.start && target < range.end) {
+        if (text[range.start] == '[' && target > range.start) {
             out += StyleRun(TextRange(range.start, range.start + 1), StyleRole.Marker)
             out += StyleRun(TextRange(target, range.end), StyleRole.Marker)
         }

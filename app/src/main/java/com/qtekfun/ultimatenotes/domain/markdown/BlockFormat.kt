@@ -17,10 +17,7 @@ private fun prefixOf(text: String, line: Line): BlockPrefix {
     val match = BLOCK_PREFIX.find(text.substring(line.start, line.end))
         ?: return BlockPrefix(
             null,
-            text.substring(line.start, line.end).takeWhile {
-                it == ' ' ||
-                    it == '\t'
-            }.length,
+            text.substring(line.start, line.end).takeWhile(Char::isWhitespace).length,
             0
         )
     val indent = match.groups["indent"]!!.value.length

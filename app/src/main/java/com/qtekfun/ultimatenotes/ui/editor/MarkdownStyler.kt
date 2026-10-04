@@ -113,6 +113,7 @@ private const val H1_SIZE = 1.5f
 private const val H2_SIZE = 1.3f
 private const val H3_SIZE = 1.15f
 
+@Suppress("CyclomaticComplexMethod") // one branch per role
 internal fun styleOf(role: StyleRole, palette: EditorPalette): SpanStyle? = when (role) {
     is StyleRole.Heading -> SpanStyle(
         fontWeight = FontWeight.Bold,

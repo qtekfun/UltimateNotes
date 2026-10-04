@@ -148,4 +148,21 @@ class InlineFormatTest {
     fun `link rejects a selection outside the text`() {
         assertThrows(IllegalArgumentException::class.java) { insertLink("abc", TextRange(2, 9)) }
     }
+
+    @Test
+    fun `only one side being marked does not count as styled`() {
+        assertEquals("**‹**x›**", inline("‹**x›", InlineStyle.Bold))
+        assertEquals("**‹x**›**", inline("‹x**›", InlineStyle.Bold))
+    }
+
+    @Test
+    fun `a styled line after a plain one is kept as it is`() {
+        assertEquals("**‹one**\n**two**›", inline("‹one\n**two**›", InlineStyle.Bold))
+    }
+
+    @Test
+    fun `a caret next to only one marker inserts a pair`() {
+        assertEquals("**x****|**", inline("**x**|", InlineStyle.Bold))
+        assertEquals("****|**x", inline("**|x", InlineStyle.Bold))
+    }
 }

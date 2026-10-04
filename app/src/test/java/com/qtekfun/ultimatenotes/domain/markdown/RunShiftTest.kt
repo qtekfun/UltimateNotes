@@ -52,4 +52,9 @@ class RunShiftTest {
     fun `a run that straddles the edit is cut at it`() {
         assertEquals(listOf(1 to 3), shifted("abcdef", "aXef", run(1, 5)))
     }
+
+    @Test
+    fun `a run ending inside the replaced text is cut at the edit`() {
+        assertEquals(listOf(0 to 2), shifted("abcdef", "aXef", run(0, 3)))
+    }
 }

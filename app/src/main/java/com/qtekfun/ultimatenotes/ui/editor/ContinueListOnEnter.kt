@@ -8,6 +8,7 @@ import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.TextFieldBuffer
 import androidx.compose.ui.text.TextRange as FieldRange
 import com.qtekfun.ultimatenotes.domain.TextRange as DomainRange
+import com.qtekfun.ultimatenotes.domain.markdown.EditResult
 import com.qtekfun.ultimatenotes.domain.markdown.continueList
 
 /**
@@ -17,18 +18,29 @@ import com.qtekfun.ultimatenotes.domain.markdown.continueList
 @OptIn(ExperimentalFoundationApi::class)
 object ContinueListOnEnter : InputTransformation {
     override fun TextFieldBuffer.transformInput() {
-        if (changes.changeCount != 1) return
+        val before = originalText.toString()
+        val result = continuation(before) ?: return
+        val edit = result.toEdit(before)
+        revertAllChanges()
+        replace(edit.range.start, edit.range.end, edit.replacement)
+        selection = FieldRange(edit.selection.start, edit.selection.end)
+    }
+
+    /** The list edit that replaces the user's lone newline, or null if this is not one. */
+    private fun TextFieldBuffer.continuation(before: String): EditResult? {
+        if (changes.changeCount != 1) return null
         val inserted = changes.getRange(0)
         val replaced = changes.getOriginalRange(0)
         val isLoneNewline = replaced.length == 0 && inserted.length == 1 &&
             asCharSequence()[inserted.start] == '\n' && originalSelection.collapsed &&
             originalSelection.start == replaced.start
-        if (!isLoneNewline) return
-        val before = originalText.toString()
-        val result = continueList(before, DomainRange(replaced.start, replaced.start)) ?: return
-        val edit = result.toEdit(before)
-        revertAllChanges()
-        replace(edit.range.start, edit.range.end, edit.replacement)
-        selection = FieldRange(edit.selection.start, edit.selection.end)
+        return if (isLoneNewline) {
+            continueList(
+                before,
+                DomainRange(replaced.start, replaced.start)
+            )
+        } else {
+            null
+        }
     }
 }
