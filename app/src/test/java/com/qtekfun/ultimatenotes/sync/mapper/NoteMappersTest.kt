@@ -6,6 +6,7 @@ package com.qtekfun.ultimatenotes.sync.mapper
 import com.qtekfun.ultimatenotes.data.api.NoteDto
 import com.qtekfun.ultimatenotes.data.api.NoteWriteDto
 import com.qtekfun.ultimatenotes.data.local.entity.NoteEntity
+import com.qtekfun.ultimatenotes.data.local.model.NoteBase
 import com.qtekfun.ultimatenotes.data.local.model.SyncState
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -37,7 +38,8 @@ class NoteMappersTest {
                 content = "# Title\nbody",
                 favorite = true,
                 syncState = SyncState.SYNCED,
-                lastSyncedEtag = "abc"
+                lastSyncedEtag = "abc",
+                base = NoteBase.of("# Title\nbody", "Title", "Work/Meetings", true)
             ),
             dto.toSyncedEntity(localId = 3)
         )

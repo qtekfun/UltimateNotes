@@ -79,4 +79,44 @@ class MigrationTest {
             assertEquals(1L, found)
         }
     }
+
+    @Test
+    fun version2To3SeedsTheMergeBaseOfSyncedNotesOnly() = runBlocking {
+        helper.createDatabase(2).use { connection ->
+            connection.execSQL(
+                "INSERT INTO note(etag, readonly, modified, title, category, content, favorite, " +
+                    "syncState, lastSyncedEtag) VALUES ('e', 0, 0, 'Synced', 'Work', 'text', 1, " +
+                    "'SYNCED', 'e')"
+            )
+            connection.execSQL(
+                "INSERT INTO note(etag, readonly, modified, title, category, content, favorite, " +
+                    "syncState, lastSyncedEtag) VALUES ('e', 0, 0, 'Edited', '', 'text', 0, " +
+                    "'DIRTY', 'e')"
+            )
+        }
+
+        helper.runMigrationsAndValidate(3, UltimateNotesDatabase.MIGRATIONS.toList()).use {
+            val bases = it.prepare(
+                "SELECT baseTitle, baseCategory, baseFavorite, baseContentHash IS NULL " +
+                    "FROM note ORDER BY localId"
+            ).use { statement ->
+                buildList {
+                    while (statement.step()) {
+                        add(
+                            listOf(
+                                if (statement.isNull(0)) null else statement.getText(0),
+                                if (statement.isNull(1)) null else statement.getText(1),
+                                if (statement.isNull(2)) null else statement.getLong(2),
+                                statement.getLong(3)
+                            )
+                        )
+                    }
+                }
+            }
+            assertEquals(
+                listOf(listOf("Synced", "Work", 1L, 0L), listOf(null, null, null, 1L)),
+                bases
+            )
+        }
+    }
 }

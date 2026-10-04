@@ -6,6 +6,7 @@ package com.qtekfun.ultimatenotes.sync.mapper
 import com.qtekfun.ultimatenotes.data.api.NoteDto
 import com.qtekfun.ultimatenotes.data.api.NoteWriteDto
 import com.qtekfun.ultimatenotes.data.local.entity.NoteEntity
+import com.qtekfun.ultimatenotes.data.local.model.NoteBase
 import com.qtekfun.ultimatenotes.data.local.model.SyncState
 
 /** The server's etag; pre-1.2 servers send none, which is kept as the empty string. */
@@ -27,7 +28,8 @@ fun NoteDto.toSyncedEntity(localId: Long = 0): NoteEntity = NoteEntity(
     content = content.orEmpty(),
     favorite = favorite,
     syncState = SyncState.SYNCED,
-    lastSyncedEtag = etag
+    lastSyncedEtag = etag,
+    base = NoteBase.of(content.orEmpty(), title, category, favorite)
 )
 
 /**
