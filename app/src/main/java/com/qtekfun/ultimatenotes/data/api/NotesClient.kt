@@ -71,7 +71,10 @@ class NotesClient(
 
     /** Updates a note; [etag] goes in `If-Match` and a 412 comes back as [ApiError.Conflict]. */
     suspend fun updateNote(id: Long, etag: String?, note: NoteWriteDto): ApiResult<NoteDto> =
-        call(missingIs = ApiError.NotFound) { api.updateNote(id, etag, note) }.body()
+        call(missingIs = ApiError.NotFound) { api.updateNote(id, etag?.let(::quoted), note) }.body()
+
+    /** The server compares `If-Match` against the etag wrapped in double quotes. */
+    private fun quoted(etag: String) = "\"$etag\""
 
     suspend fun deleteNote(id: Long): ApiResult<Unit> =
         call(missingIs = ApiError.NotFound) { api.deleteNote(id) }.map { }
