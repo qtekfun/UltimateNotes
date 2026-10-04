@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 UltimateNotes contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<resources>
+    <string name="widget_label">Notas recientes</string>
+    <string name="widget_description">Tus últimas notas, con las favoritas primero, y un botón para crear una nota.</string>
+    <string name="widget_new_note">Nota nueva</string>
+    <string name="widget_untitled">Sin título</string>
+    <string name="widget_favorite">Favorita</string>
+    <string name="widget_locked">Las notas están bloqueadas. Abre la app para desbloquear.</string>
+    <string name="widget_signed_out">Inicia sesión para ver tus notas.</string>
+    <string name="widget_empty">Aún no hay notas.</string>
+    <string name="widget_open_note">Abrir nota: %1$s</string>
+    <string name="widget_preview_title">Lista de la compra</string>
+    <string name="widget_preview_line">Leche, pan, café</string>
+</resources>

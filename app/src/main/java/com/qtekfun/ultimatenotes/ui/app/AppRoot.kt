@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -16,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.qtekfun.ultimatenotes.domain.widget.LaunchRequest
 import com.qtekfun.ultimatenotes.ui.editor.EditorScreen
 import com.qtekfun.ultimatenotes.ui.editor.NEW_NOTE_ID
 import com.qtekfun.ultimatenotes.ui.login.LoginScreen
@@ -26,12 +28,33 @@ import com.qtekfun.ultimatenotes.ui.theme.UltimateNotesTheme
 
 /** Themed app root: startup routing between login, the main screen and settings. */
 @Composable
-fun AppRoot(viewModel: AppViewModel = viewModel()) {
+fun AppRoot(
+    launchRequest: LaunchRequest? = null,
+    onLaunchHandled: () -> Unit = {},
+    viewModel: AppViewModel = viewModel()
+) {
     val destination by viewModel.destination.collectAsStateWithLifecycle()
     val theme by viewModel.theme.collectAsStateWithLifecycle()
     var inSettings by rememberSaveable(destination) { mutableStateOf(false) }
     var openNote by rememberSaveable(destination) { mutableStateOf<Long?>(null) }
     var newNoteCategory by rememberSaveable(destination) { mutableStateOf("") }
+    // A widget tap: once signed in, go to that note (or a new one) and forget the request.
+    LaunchedEffect(launchRequest, destination) {
+        if (launchRequest != null && destination == AppDestination.MAIN) {
+            inSettings = false
+            when (launchRequest) {
+                is LaunchRequest.OpenNote -> openNote = launchRequest.localId
+
+                LaunchRequest.NewNote -> {
+                    newNoteCategory = ""
+                    openNote = NEW_NOTE_ID
+                }
+            }
+            onLaunchHandled()
+        } else if (launchRequest != null && destination == AppDestination.LOGIN) {
+            onLaunchHandled()
+        }
+    }
     UltimateNotesTheme(theme) {
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             when (destination) {
