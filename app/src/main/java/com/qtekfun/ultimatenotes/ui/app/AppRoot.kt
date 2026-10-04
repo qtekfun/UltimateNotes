@@ -16,9 +16,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.qtekfun.ultimatenotes.ui.editor.EditorScreen
+import com.qtekfun.ultimatenotes.ui.editor.NEW_NOTE_ID
 import com.qtekfun.ultimatenotes.ui.login.LoginScreen
 import com.qtekfun.ultimatenotes.ui.main.MainScreen
-import com.qtekfun.ultimatenotes.ui.main.NoteStubScreen
+import com.qtekfun.ultimatenotes.ui.main.MainViewModel
 import com.qtekfun.ultimatenotes.ui.settings.SettingsScreen
 import com.qtekfun.ultimatenotes.ui.theme.UltimateNotesTheme
 
@@ -29,6 +31,7 @@ fun AppRoot(viewModel: AppViewModel = viewModel()) {
     val theme by viewModel.theme.collectAsStateWithLifecycle()
     var inSettings by rememberSaveable(destination) { mutableStateOf(false) }
     var openNote by rememberSaveable(destination) { mutableStateOf<Long?>(null) }
+    var newNoteCategory by rememberSaveable(destination) { mutableStateOf("") }
     UltimateNotesTheme(theme) {
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             when (destination) {
@@ -40,14 +43,28 @@ fun AppRoot(viewModel: AppViewModel = viewModel()) {
                 AppDestination.MAIN -> if (inSettings) {
                     BackHandler { inSettings = false }
                     SettingsScreen(onBack = { inSettings = false })
-                } else if (openNote != null) {
-                    BackHandler { openNote = null }
-                    NoteStubScreen(onBack = { openNote = null }) // T11 brings the editor
                 } else {
-                    MainScreen(
-                        onOpenSettings = { inSettings = true },
-                        onOpenNote = { openNote = it }
-                    )
+                    // Shared with the list, so a note deleted from the editor gets the list's undo.
+                    val main: MainViewModel = viewModel()
+                    val note = openNote
+                    if (note != null) {
+                        EditorScreen(
+                            noteId = note,
+                            newNoteCategory = newNoteCategory,
+                            onClose = { openNote = null },
+                            onDeleted = main::delete
+                        )
+                    } else {
+                        MainScreen(
+                            onOpenSettings = { inSettings = true },
+                            onOpenNote = { openNote = it },
+                            onNewNote = { category ->
+                                newNoteCategory = category
+                                openNote = NEW_NOTE_ID
+                            },
+                            viewModel = main
+                        )
+                    }
                 }
             }
         }

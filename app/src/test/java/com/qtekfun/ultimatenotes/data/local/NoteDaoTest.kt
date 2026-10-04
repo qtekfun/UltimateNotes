@@ -205,4 +205,31 @@ class NoteDaoTest {
             assertEquals(0, awaitItem())
         }
     }
+
+    @Test
+    fun `modify stores the changed note and reports it`() = runTest {
+        val id = notes.insert(note("n"))
+        assertEquals(true, notes.modify(id) { it.copy(title = "changed") })
+        assertEquals("changed", notes.get(id)!!.title)
+    }
+
+    @Test
+    fun `modify leaves the note alone when the change is null`() = runTest {
+        val id = notes.insert(note("n"))
+        assertEquals(false, notes.modify(id) { null })
+        assertEquals("n", notes.get(id)!!.title)
+    }
+
+    @Test
+    fun `modify of a missing note changes nothing`() = runTest {
+        var called = false
+        assertEquals(
+            false,
+            notes.modify(404) {
+                called = true
+                it
+            }
+        )
+        assertEquals(false, called)
+    }
 }

@@ -99,8 +99,6 @@
     <string name="cancel">Cancelar</string>
     <string name="settings_list">Lista de notas</string>
     <string name="settings_sort">Ordenar notas por</string>
-    <string name="editor_stub_title">Nota</string>
-    <string name="editor_stub_message">El editor llegará pronto.</string>
     <string name="settings_sync">Sincronización</string>
     <string name="settings_sync_interval">Intervalo de sincronización</string>
     <string name="sync_interval_off">Desactivado</string>
@@ -112,4 +110,20 @@
     <string name="sync_network_unmetered">Solo redes sin límite de datos (Wi-Fi)</string>
     <string name="sync_channel_name">Sincronización</string>
     <string name="sync_notification_title">Sincronizando notas…</string>
+    <string name="editor_redo">Rehacer</string>
+    <string name="editor_more">Más opciones</string>
+    <string name="editor_readonly">Esta nota es de solo lectura.</string>
+    <string name="editor_toggle_checkbox">Marcar o desmarcar elemento de la lista</string>
+    <string name="editor_text_field">Texto de la nota</string>
+    <string name="format_toolbar">Formato</string>
+    <string name="format_bold">Negrita</string>
+    <string name="format_italic">Cursiva</string>
+    <string name="format_strike">Tachado</string>
+    <string name="format_heading">Encabezado</string>
+    <string name="format_bullet">Lista con viñetas</string>
+    <string name="format_numbered">Lista numerada</string>
+    <string name="format_checklist">Lista de tareas</string>
+    <string name="format_quote">Cita</string>
+    <string name="format_link">Enlace</string>
+    <string name="format_code">Código en línea</string>
 </resources>

@@ -79,3 +79,21 @@ opacos como texto monoespaciado). Se activa si el spike de T11 demuestra que `Ou
 - commonmark-java en Android es "best effort": probar en dispositivo en T11. Sin dependencia, el equivalente es un
   escáner de líneas propio con el mismo contrato `Segment`.
 - Dependencia nueva: confirmar con el usuario antes de añadirla (CLAUDE.md).
+
+## Resultado del spike de T11 (2026-10-04)
+Sin dispositivo ni emulador: lo verificado aquí es API (bytecode de `foundation-android` 1.12.1, compilación) y
+rendimiento en JVM; lo que depende de pantalla real queda marcado como "pendiente en dispositivo".
+
+| Punto | Resultado |
+|---|---|
+| (a) Casillas tocables | Viable con el enfoque del ADR. `replace` en `OutputTransformation` cambia `[ ]`/`[x]` por `☐`/`☑` rellenado con dos U+200B para **conservar la longitud**: así los offsets del texto dibujado son los del Markdown y `getOffsetForPosition`/`getBoundingBox` del `onTextLayout` no necesitan mapeo (la API pública no expone el mapeo). El toque se detecta con `pointerInput` en pase `Initial` contra el rectángulo del glifo (+16 dp a cada lado, ~48 dp) y solo consume el gesto si empieza en una casilla. Alterna un único carácter con `ChecklistParser.toggle` + `TextFieldState.edit` (deshacible). Pendiente en dispositivo: precisión del toque y glifos en distintas fuentes. |
+| (b) Estilos por línea | Cabeceras y citas se resuelven con `SpanStyle` (tamaño/negrita; cursiva y color) sobre el rango del segmento; los marcadores (`#`, `>`, `**`, `-`) se atenúan. `TextFieldBuffer.addStyle(ParagraphStyle, …)` existe en 1.12.1 pero **no se usa**: sin dispositivo no se puede comprobar que un estilo de párrafo con rangos que no empiezan en el inicio de línea no fuerce saltos; sangría de citas/listas queda como mejora. |
+| (c) Rendimiento | `analyze` + `StyleRuns` sobre una nota de 50 KB: ~11 ms (mediana, JVM de escritorio, `LargeNoteTest`). En móvil puede ser 3–6 veces más, así que: ≤ 20 000 caracteres se analiza en el momento (`StyleRunSource`); por encima se analiza en `Dispatchers.Default` y se dibuja con el último resultado desplazado sobre la edición (`shiftRuns`). Operaciones de formato + `toEdit` en 50 KB: ~2 ms. Pendiente en dispositivo: medir el coste de `transformOutput` con 50 KB. |
+| API | `InputTransformation` (`ContinueListOnEnter`) intercepta el Enter y delega en `continueList`; `TextFieldBuffer.changes` y `undoState` son `@ExperimentalFoundationApi`. `TextFieldState` y `snapshotFlow` funcionan en tests JVM. |
+
+Decisión: se mantiene `BasicTextField` + `OutputTransformation` (no se activa el fallback de bloques).
+Límites conocidos de v1: los enlaces no se abren al tocarlos; las casillas no son nodos de accesibilidad
+individuales (hay una acción personalizada "alternar elemento de la lista" en la línea del cursor);
+si la sincronización trae una versión remota de la nota mientras está abierta en el editor, al guardar
+gana el texto del editor (el motor de sync solo detecta el conflicto si el servidor cambia de nuevo);
+el análisis usa commonmark-java ya presente desde T06.

@@ -98,8 +98,6 @@
     <string name="cancel">Cancel</string>
     <string name="settings_list">Notes list</string>
     <string name="settings_sort">Sort notes by</string>
-    <string name="editor_stub_title">Note</string>
-    <string name="editor_stub_message">The editor is coming soon.</string>
     <string name="settings_sync">Synchronization</string>
     <string name="settings_sync_interval">Sync interval</string>
     <string name="sync_interval_off">Off</string>
@@ -111,4 +109,20 @@
     <string name="sync_network_unmetered">Unmetered networks only (Wi-Fi)</string>
     <string name="sync_channel_name">Synchronization</string>
     <string name="sync_notification_title">Syncing notes…</string>
+    <string name="editor_redo">Redo</string>
+    <string name="editor_more">More options</string>
+    <string name="editor_readonly">This note is read-only.</string>
+    <string name="editor_toggle_checkbox">Toggle checklist item</string>
+    <string name="editor_text_field">Note text</string>
+    <string name="format_toolbar">Formatting</string>
+    <string name="format_bold">Bold</string>
+    <string name="format_italic">Italic</string>
+    <string name="format_strike">Strikethrough</string>
+    <string name="format_heading">Heading</string>
+    <string name="format_bullet">Bulleted list</string>
+    <string name="format_numbered">Numbered list</string>
+    <string name="format_checklist">Checklist</string>
+    <string name="format_quote">Quote</string>
+    <string name="format_link">Link</string>
+    <string name="format_code">Inline code</string>
 </resources>
