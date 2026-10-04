@@ -138,4 +138,23 @@ class NoteSummaryTest {
         assertEquals("", NoteSummary.firstLine(Corpus.load("empty")))
         assertEquals("", NoteSummary.firstLine(Corpus.load("blank")))
     }
+
+    @Test
+    fun `a very long note previews only its first lines`() {
+        val body = (1..100_000).joinToString("\n") {
+            "**line $it** with _some_ [link](https://x.org)"
+        }
+        assertEquals(
+            "line 1 with some link line 2 with some link line 3 with some link",
+            NoteSummary.preview("Title\n$body", title = "Title", maxLength = 65)
+        )
+    }
+
+    @Test
+    fun `a preview stops at the first line that fills it`() {
+        assertEquals(
+            "abcde",
+            NoteSummary.preview("abcdefghij\nnext line", title = "other", maxLength = 5)
+        )
+    }
 }

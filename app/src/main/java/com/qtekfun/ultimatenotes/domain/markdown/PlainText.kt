@@ -43,13 +43,21 @@ object PlainText {
     private val STRAY_MARKS = Regex("""\*\*|~~|__""")
     private val TABLE_PIPE = Regex("""[ \t]*\|[ \t]*""")
 
+    /** Characters that can start a rule, a fence or a table separator row. */
+    private const val DECORATION_STARTS = "-*_`~|"
+
+    /** Characters that can start inline syntax; a line without any of them needs no regex. */
+    private const val INLINE_MARKS = "*_~`[<\\|"
+
     /** [line] as plain text, trimmed; "" when the line has no text (a rule, a fence, blank). */
-    fun line(line: String): String {
-        if (DECORATION.matches(line)) return ""
-        var text = line.replace(LEADING_SYNTAX, "")
-        text = inline(text)
-        return text.trim()
+    fun line(line: String): String = if (line.isBlank() || isDecoration(line)) {
+        ""
+    } else {
+        inline(line.replace(LEADING_SYNTAX, "")).trim()
     }
+
+    private fun isDecoration(line: String): Boolean =
+        line.trimStart().first() in DECORATION_STARTS && DECORATION.matches(line)
 
     /** The lines of [text] that have any text, as plain text. */
     fun lines(text: String): Sequence<String> =
@@ -57,6 +65,7 @@ object PlainText {
 
     /** Inline syntax only: emphasis, strike, code, links, images and escapes. */
     private fun inline(text: String): String {
+        if (text.none { it in INLINE_MARKS }) return text
         var out = ESCAPE.replace(text) {
             (HIDDEN_BASE + it.groupValues[1][0].code).toChar().toString()
         }
