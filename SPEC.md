@@ -63,7 +63,7 @@ Recordatorios/notificaciones, etiquetas propias, colores de nota, adjuntos e im�
 - **Carpetas (cajón lateral)**: árbol de categorías con contador, "Todas", "Favoritas", "Sin carpeta", y ajustes al pie.
 - **Lista de notas**: secciones *Fijadas*, *Hoy*, *Ayer*, *Últimos 7 días*, *Últimos 30 días*, mes/año. Fila: título, previsualización de 1-2 líneas, fecha, carpeta. Acciones por swipe (favorito, borrar). Orden por modificación (DEFECTO; configurable: título, fecha).
 - **Editor**: título implícito (primera línea), barra de formato, menú (favorita, mover a carpeta, exportar, borrar).
-- **Búsqueda** (barra inferior, ver Layout): sobre Room FTS (título + contenido), resultados con fragmento resaltado, filtro por carpeta.
+- **Búsqueda** (barra inferior, ver Layout): sobre Room FTS (título + contenido), resultados con fragmento resaltado, filtro por carpeta. Decisiones (T12): el índice usa el tokenizador `unicode61` (insensible a mayúsculas y acentos; BD v2 con migración); solo la última palabra de la consulta busca por prefijo; resultados ordenados por coincidencia en el título y luego por fecha de modificación; filtro «todas / esta carpeta» solo dentro de una carpeta; las consultas nunca se registran.
 - **Ajustes**: cuenta, sync, tema, orden, bloqueo biométrico, backup, acerca de.
 - Borrado: a la papelera no existe en la API → confirmación + "Deshacer" en snackbar durante unos segundos antes de enviar el DELETE.
 

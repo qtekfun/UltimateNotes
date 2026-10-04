@@ -21,18 +21,14 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.qtekfun.ultimatenotes.R
@@ -43,13 +39,16 @@ val FloatingSearchBarHeight = 56.dp + 16.dp * 2
 
 /**
  * The Apple Notes bottom bar (SPEC §7): a search capsule with the new-note button at its right.
- * It sits above the gesture/navigation bar and, being padded by the full safe-drawing insets, is
- * pushed up by the keyboard so it stays glued above it. Search itself arrives with T12 and the
- * new-note action with T11.
+ * It sits above the gesture/navigation bar. The capsule is a button: tapping it opens the search
+ * screen ([com.qtekfun.ultimatenotes.ui.search.SearchScreen]), which keeps its own capsule glued
+ * above the keyboard.
  */
 @Composable
-fun FloatingSearchBar(onNewNote: () -> Unit, modifier: Modifier = Modifier) {
-    var query by rememberSaveable { mutableStateOf("") }
+fun FloatingSearchBar(
+    onNewNote: () -> Unit,
+    modifier: Modifier = Modifier,
+    onSearch: () -> Unit = {}
+) {
     Row(
         modifier = modifier
             .windowInsetsPadding(
@@ -63,24 +62,32 @@ fun FloatingSearchBar(onNewNote: () -> Unit, modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         val searchLabel = stringResource(R.string.search_field)
-        TextField(
-            value = query,
-            onValueChange = { query = it },
+        Surface(
+            onClick = onSearch,
             modifier = Modifier
                 .weight(1f)
-                .heightIn(min = 56.dp),
-            placeholder = { Text(stringResource(R.string.search_placeholder)) },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = searchLabel) },
-            singleLine = true,
+                .heightIn(min = 56.dp)
+                .semantics { contentDescription = searchLabel },
             shape = CircleShape,
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent
-            )
-        )
+            color = MaterialTheme.colorScheme.surfaceContainerHigh
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Default.Search,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    stringResource(R.string.search_placeholder),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
         FilledIconButton(onClick = onNewNote, modifier = Modifier.size(56.dp)) {
             Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.note_new))
         }

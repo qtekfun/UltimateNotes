@@ -22,7 +22,7 @@ Hitos: **M0** = CI con artefacto debug (T01) · **M1** = primera versión usable
 - [x] **T09 Shell y tema**: navegación, **cajón de carpetas con menú hamburguesa a la izquierda**, ajustes base, tema dinámico/oscuro/AMOLED, i18n EN/ES (copiar de Tasks).
 - [x] **T10 Lista**: secciones por fecha, favoritas arriba, swipe, deshacer borrado, orden, selección múltiple, títulos grandes colapsables, **barra de búsqueda inferior flotante + botón nota nueva**.
 - [ ] **T11 Editor**: integración de T02, barra de formato, checklists, autoguardado, deshacer/rehacer, mover de carpeta, favorita.
-- [ ] **T12 Búsqueda (M1)**: FTS offline desde la barra inferior, fragmentos resaltados, filtro por carpeta. **Al cerrar: pre-release `v0.1.0-rc.1` firmada y publicada.**
+- [x] **T12 Búsqueda (M1)**: FTS offline desde la barra inferior, fragmentos resaltados, filtro por carpeta. **Al cerrar: pre-release `v0.1.0-rc.1` firmada y publicada.**
 
 ## Fase 4 — Extras
 - [ ] **T13 Biometría**: bloqueo global, timeout, `FLAG_SECURE` opcional.
