@@ -7,10 +7,13 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.test.platform.app.InstrumentationRegistry
@@ -31,6 +34,8 @@ class EditorTest {
     private fun text(id: Int) =
         InstrumentationRegistry.getInstrumentation().targetContext.getString(id)
 
+    private val title = TextFieldState()
+
     private fun show(
         note: String,
         readOnly: Boolean = false,
@@ -43,6 +48,7 @@ class EditorTest {
                 EditorContent(
                     state = EditorUiState(loaded = true, readOnly = readOnly, category = "Work"),
                     text = state,
+                    title = title,
                     isNew = false,
                     actions = actions
                 )
@@ -81,6 +87,40 @@ class EditorTest {
         assertEquals("- [x] milk\n- [x] eggs", state.text.toString())
         compose.onNodeWithContentDescription(text(R.string.undo)).performClick()
         assertEquals("- [ ] milk\n- [x] eggs", state.text.toString())
+    }
+
+    @Test
+    fun theTitleLineShowsItsHintUntilSomethingIsTyped() {
+        show("body")
+        compose.onNodeWithText(text(R.string.editor_title_hint)).assertIsDisplayed()
+
+        compose.onNodeWithContentDescription(text(R.string.editor_title_field))
+            .performTextInput("Plan")
+
+        compose.onNodeWithText(text(R.string.editor_title_hint)).assertDoesNotExist()
+    }
+
+    @Test
+    fun typingInTheTitleLeavesTheBodyAlone() {
+        val body = show("body")
+
+        compose.onNodeWithContentDescription(text(R.string.editor_title_field))
+            .performTextInput("Plan")
+
+        assertEquals("Plan", title.text.toString())
+        assertEquals("body", body.text.toString())
+    }
+
+    @Test
+    fun enterInTheTitleMovesTheFocusToTheBody() {
+        show("body")
+        val titleField = compose.onNodeWithContentDescription(text(R.string.editor_title_field))
+        titleField.performClick()
+        titleField.assertIsFocused()
+
+        titleField.performImeAction()
+
+        compose.onNodeWithContentDescription(text(R.string.editor_text_field)).assertIsFocused()
     }
 
     @Test

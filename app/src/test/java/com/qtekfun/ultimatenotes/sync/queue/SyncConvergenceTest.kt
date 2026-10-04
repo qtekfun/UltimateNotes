@@ -23,8 +23,9 @@ import org.opentest4j.AssertionFailedError
  * server. Once the failures stop and both clients sync until quiet, they must
  *
  * 1. converge: both clients and the server hold exactly the same notes, all of them synced;
- * 2. lose no text: every text a user typed survives somewhere unless a client that had seen that
- *    text later overwrote or deleted it itself ("superseded"). Typed texts carry a unique token.
+ * 2. lose no text or title: every text and every title a user typed survives somewhere unless a
+ *    client that had seen it later overwrote or deleted it itself ("superseded"). Typed texts and
+ *    titles carry a unique token (the server may number or sanitize a title, never drop it).
  *
  * The seed is in the test name: a failure is reproducible by rerunning that seed.
  */
@@ -64,8 +65,13 @@ class SyncConvergenceTest {
 
                     3 -> client.favorite(note.localId, !note.favorite)
 
+                    5 -> {
+                        superseded += tokensIn(note.title)
+                        client.retitle(note.localId, "Title ${nextToken()}")
+                    }
+
                     else -> {
-                        superseded += tokensIn(note.content)
+                        superseded += tokensIn(note.content) + tokensIn(note.title)
                         client.delete(note.localId)
                     }
                 }
@@ -140,7 +146,8 @@ class SyncConvergenceTest {
     }
 
     private suspend fun check(world: World, seed: Long) {
-        val serverNotes = world.server.snapshot().sortedBy { it.first }
+        val serverNotes = world.server.snapshot()
+            .sortedWith(compareBy({ it.first }, { it.second }, { it.third }))
         world.clients.forEachIndexed { index, client ->
             val rows = client.all()
             fail(seed, rows.all { it.syncState == SyncState.SYNCED }) {
@@ -148,10 +155,14 @@ class SyncConvergenceTest {
             }
             val visible = client.visible()
             fail(seed, visible == serverNotes) {
-                "client $index differs from the server: ${visible.size} vs ${serverNotes.size} notes"
+                "client $index differs from the server: $visible vs $serverNotes"
+            }
+            val titles = rows.filter { it.syncState != SyncState.DELETED }.map { it.title }.sorted()
+            fail(seed, titles == world.server.titles().sorted()) {
+                "client $index has other titles than the server"
             }
         }
-        val texts = world.server.contents().joinToString("\n")
+        val texts = (world.server.contents() + world.server.titles()).joinToString("\n")
         val lost = (world.typed - world.superseded).filterNot { it in world.tokensIn(texts) }
         fail(seed, lost.isEmpty()) { "typed text lost: $lost" }
     }
@@ -190,7 +201,7 @@ class SyncConvergenceTest {
         const val FAILURE_PERCENT = 12
         const val IN_FLIGHT_PERCENT = 8
         const val CREATE_ONE_IN = 6
-        const val OP_KINDS = 5
+        const val OP_KINDS = 6
         const val HTTP_SERVER = 500
         const val HTTP_AUTH = 401
         val FOLDERS = listOf("", "Work", "Home", "Work/Reports")

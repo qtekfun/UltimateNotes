@@ -70,6 +70,55 @@ class SyncEnginePushTest {
     }
 
     @Test
+    fun `a new note is posted with its title and adopts the one the server stored`() = runBlocking {
+        server.put("x", title = "Dup")
+        val numbered = client.create("body", title = "Dup")
+        val sanitized = client.create("body2", title = "What: now?")
+
+        val report = success(client.sync())
+
+        assertEquals(2, report.pushed)
+        assertEquals("Dup (2)", checkNotNull(client.dao.get(numbered)).title)
+        assertEquals("What now", checkNotNull(client.dao.get(sanitized)).title)
+        assertEquals(listOf("Dup", "Dup (2)", "What now"), server.titles())
+        assertEquals(setOf(SyncState.SYNCED), client.all().map { it.syncState }.toSet())
+    }
+
+    @Test
+    fun `renaming a note uploads the title alone and the content does not rename it`() =
+        runBlocking {
+            val a = server.put("Body line\nrest", title = "Old title")
+            client.sync()
+            val id = client.byContent("Body line\nrest").localId
+
+            client.retitle(id, "New title")
+            success(client.sync())
+            assertEquals("New title", server.titleOf(a))
+            assertEquals(listOf("Body line\nrest"), server.contents())
+
+            client.edit(id, "Another first line\nrest")
+            success(client.sync())
+            assertEquals("New title", server.titleOf(a))
+            assertEquals("New title", checkNotNull(client.dao.get(id)).title)
+        }
+
+    @Test
+    fun `a title typed while the note is being uploaded is kept and uploaded next`() = runBlocking {
+        val id = client.create("body", title = "First")
+        server.onRequest = { if (it == "POST") client.retitle(id, "Typed meanwhile") }
+
+        success(client.sync())
+
+        val during = checkNotNull(client.dao.get(id))
+        assertEquals("Typed meanwhile", during.title)
+        assertEquals(SyncState.DIRTY, during.syncState)
+
+        success(client.sync())
+        assertEquals(listOf("Typed meanwhile"), server.titles())
+        assertEquals(SyncState.SYNCED, checkNotNull(client.dao.get(id)).syncState)
+    }
+
+    @Test
     fun `a deleted note is deleted on the server and its tombstone removed`() = runBlocking {
         server.put("A")
         client.sync()
@@ -150,14 +199,15 @@ class SyncEnginePushTest {
             assertEquals("Title\nother body", original.content)
             assertEquals(SyncState.SYNCED, original.syncState)
             val copy = client.all().single { it.localId != id }
-            assertEquals("Title (conflicto 2026-10-04)\nmy body", copy.content)
+            assertEquals("Title\nmy body", copy.content)
             assertEquals("Title (conflicto 2026-10-04)", copy.title)
             assertEquals("Work", copy.category)
             assertEquals(SyncState.SYNCED, copy.syncState)
             assertEquals(
-                setOf("Title\nother body", "Title (conflicto 2026-10-04)\nmy body"),
+                setOf("Title\nother body", "Title\nmy body"),
                 server.contents().toSet()
             )
+            assertEquals(setOf("Title", "Title (conflicto 2026-10-04)"), server.titles().toSet())
         }
 
     @Test

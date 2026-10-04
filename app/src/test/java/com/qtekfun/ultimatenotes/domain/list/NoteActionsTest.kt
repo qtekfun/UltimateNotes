@@ -128,6 +128,7 @@ class NoteActionsTest {
     fun `observing notes maps them to rows and hides tombstones`() = runTest {
         val kept = dao.insert(
             NoteEntity(
+                title = "Hello",
                 content = "# Hello\nworld",
                 modified = 5,
                 syncState = SyncState.SYNCED,

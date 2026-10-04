@@ -30,11 +30,16 @@ import retrofit2.Response
  * - the list has its own ETag (304 on a match), `Last-Modified`, `pruneBefore` (notes modified
  *   strictly before it come as bare ids) and chunking, where the bare ids of pruned notes come
  *   only in the last chunk;
- * - every write moves the server clock one second forward.
+ * - every write moves the server clock one second forward;
+ * - the title is its own field (API >= 1.0): POST without a title stores "New note", PUT without
+ *   one leaves it alone, and a stored title is sanitized like `NoteUtil::getSafeTitle` does
+ *   (illegal characters removed, at most 100 characters) and numbered ("x (2)") when another note
+ *   of the same category has it. The content never renames a note.
  */
 class FakeNotesServer : NotesApi {
     private data class Stored(
         val id: Long,
+        val title: String,
         val content: String,
         val category: String,
         val favorite: Boolean,
@@ -47,7 +52,7 @@ class FakeNotesServer : NotesApi {
             id = id,
             etag = etag,
             modified = modified,
-            title = content.lineSequence().firstOrNull().orEmpty(),
+            title = title,
             category = category,
             content = content,
             favorite = favorite
@@ -89,6 +94,11 @@ class FakeNotesServer : NotesApi {
 
     val size get() = notes.size
 
+    /** Titles of the notes, in id order. */
+    fun titles(): List<String> = notes.values.map { it.title }
+
+    fun titleOf(id: Long): String = notes.getValue(id).title
+
     /** Current notes as (content, category, favorite), for assertions. */
     fun snapshot(): List<Triple<String, String, Boolean>> =
         notes.values.map { Triple(it.content, it.category, it.favorite) }
@@ -97,14 +107,38 @@ class FakeNotesServer : NotesApi {
 
     fun ids(): List<Long> = notes.keys.toList()
 
-    /** A change made by another client, straight on the server. */
-    fun put(content: String, category: String = "", favorite: Boolean = false): Long {
+    /**
+     * A note created by another client, straight on the server. Like the web UI, it is titled
+     * after its first line unless [title] says otherwise.
+     */
+    fun put(
+        content: String,
+        category: String = "",
+        favorite: Boolean = false,
+        title: String = content.lineSequence().firstOrNull().orEmpty()
+    ): Long {
         val id = nextId++
-        notes[id] = Stored(id, content, category, favorite, ++clock, 1)
+        val unique = uniqueTitle(id, category, title)
+        notes[id] = Stored(id, unique, content, category, favorite, ++clock, 1)
         return id
     }
 
     fun edit(id: Long, content: String) = change(id) { it.copy(content = content) }
+
+    /** The title changed by another client (the web UI's rename). */
+    fun retitle(id: Long, title: String) =
+        change(id) { it.copy(title = uniqueTitle(id, it.category, title)) }
+
+    private fun uniqueTitle(id: Long, category: String, wanted: String): String {
+        val base = wanted.replace(ILLEGAL, "").replace(WHITESPACE, " ").trim().take(MAX_TITLE)
+            .ifEmpty { NEW_NOTE }
+        var title = base
+        var n = 1
+        while (notes.values.any { it.id != id && it.category == category && it.title == title }) {
+            title = "$base (${++n})"
+        }
+        return title
+    }
 
     fun remove(id: Long) {
         notes.remove(id)
@@ -177,7 +211,12 @@ class FakeNotesServer : NotesApi {
 
     override suspend fun createNote(note: NoteWriteDto): Response<NoteDto> =
         enter("POST")?.toResponse() ?: run {
-            val id = put(note.content.orEmpty(), note.category.orEmpty(), note.favorite ?: false)
+            val id = put(
+                note.content.orEmpty(),
+                note.category.orEmpty(),
+                note.favorite ?: false,
+                note.title.orEmpty()
+            )
             Response.success(notes.getValue(id).dto())
         }
 
@@ -202,9 +241,12 @@ class FakeNotesServer : NotesApi {
 
             else -> {
                 change(id) {
+                    val category = note.category ?: it.category
                     it.copy(
+                        title = note.title?.takeIf { t -> t != it.title }
+                            ?.let { t -> uniqueTitle(id, category, t) } ?: it.title,
                         content = note.content ?: it.content,
-                        category = note.category ?: it.category,
+                        category = category,
                         favorite = note.favorite ?: it.favorite
                     )
                 }
@@ -231,6 +273,10 @@ class FakeNotesServer : NotesApi {
 
     private companion object {
         const val START = 1_700_000_000L
+        const val MAX_TITLE = 100
+        const val NEW_NOTE = "New note"
+        val ILLEGAL = Regex("""[*|/\\:"<>?]""")
+        val WHITESPACE = Regex("""\s""")
         const val MILLIS = 1000L
         const val NOT_MODIFIED = 304
         const val HTTP_NOT_FOUND = 404

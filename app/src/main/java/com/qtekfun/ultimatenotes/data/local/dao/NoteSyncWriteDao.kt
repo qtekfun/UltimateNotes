@@ -70,22 +70,29 @@ interface NoteSyncWriteDao {
     }
 
     /**
-     * The server accepted [pushed] (as it was when sent) and answered with [id] and [etag]. The
-     * row becomes SYNCED if it still has the pushed text, folder and favorite. If it was edited
-     * meanwhile it stays DIRTY on top of the new etag, and if it was deleted meanwhile it stays
-     * DELETED: the newer local change is never overwritten.
+     * The server accepted [pushed] (as it was when sent) and answered with [id], [etag] and the
+     * title it stored ([title]: sanitized, possibly numbered). The row becomes SYNCED if it still
+     * has the pushed title, text, folder and favorite, and then adopts the server's title. If it
+     * was edited meanwhile it stays DIRTY on top of the new etag with its own title, and if it was
+     * deleted meanwhile it stays DELETED: the newer local change is never overwritten.
      */
     @Transaction
-    suspend fun completePush(pushed: NoteEntity, id: Long, etag: String) {
+    suspend fun completePush(pushed: NoteEntity, id: Long, etag: String, title: String) {
         val current = get(pushed.localId) ?: return
         val accepted = current.copy(id = id, etag = etag, lastSyncedEtag = etag)
-        val sameBody = current.content == pushed.content &&
+        val sameBody = current.title == pushed.title &&
+            current.content == pushed.content &&
             current.category == pushed.category &&
             current.favorite == pushed.favorite
         update(
             when {
                 current.syncState == SyncState.DELETED -> accepted
-                sameBody -> accepted.copy(syncState = SyncState.SYNCED)
+
+                sameBody -> accepted.copy(
+                    title = title.ifBlank { current.title },
+                    syncState = SyncState.SYNCED
+                )
+
                 else -> accepted.copy(syncState = SyncState.DIRTY)
             }
         )

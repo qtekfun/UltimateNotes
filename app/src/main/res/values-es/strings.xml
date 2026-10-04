@@ -130,6 +130,9 @@
     <string name="editor_more">Más opciones</string>
     <string name="editor_readonly">Esta nota es de solo lectura.</string>
     <string name="editor_toggle_checkbox">Marcar o desmarcar elemento de la lista</string>
+    <string name="editor_title_field">Título de la nota</string>
+    <string name="editor_title_hint">Título</string>
+    <string name="note_new_title">Nueva nota</string>
     <string name="editor_text_field">Texto de la nota</string>
     <string name="format_toolbar">Formato</string>
     <string name="format_bold">Negrita</string>

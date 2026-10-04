@@ -162,7 +162,7 @@ internal class NotePuller(
     }
 
     private suspend fun adoptServer(local: NoteEntity, dto: NoteDto): Boolean? = if (local.etag ==
-        dto.etag
+        dto.etag && local.title == dto.title
     ) {
         null
     } else {
