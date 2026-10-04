@@ -176,4 +176,12 @@
     <string name="sync_now">Sincronizar ahora</string>
     <string name="sync_in_progress">Sincronizando…</string>
     <string name="sync_failed">La última sincronización falló. Toca para reintentar</string>
+    <string name="export_note">Exportar…</string>
+    <string name="export_title">Exportar nota</string>
+    <string name="export_share_markdown">Compartir como Markdown</string>
+    <string name="export_share_pdf">Compartir como PDF</string>
+    <string name="export_save_markdown">Guardar Markdown en un archivo</string>
+    <string name="export_save_pdf">Guardar PDF en un archivo</string>
+    <string name="export_cancel">Cancelar</string>
+    <string name="export_failed">No se pudo exportar la nota.</string>
 </resources>

@@ -5,14 +5,18 @@ package com.qtekfun.ultimatenotes
 
 import android.app.Application
 import androidx.work.Configuration
+import com.qtekfun.ultimatenotes.domain.export.ExportDirectory
 import com.qtekfun.ultimatenotes.sync.work.SyncScheduler
 import com.qtekfun.ultimatenotes.sync.work.SyncWorkerFactory
 import dagger.Lazy
 import dagger.hilt.android.HiltAndroidApp
+import java.io.File
+import java.time.Clock
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 @HiltAndroidApp
 class UltimateNotesApp :
@@ -27,6 +31,11 @@ class UltimateNotesApp :
 
     override fun onCreate() {
         super.onCreate()
-        scheduler.get().keepPeriodicInSync(CoroutineScope(SupervisorJob() + Dispatchers.Default))
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        scheduler.get().keepPeriodicInSync(scope)
+        scope.launch(Dispatchers.IO) {
+            ExportDirectory(File(cacheDir, ExportDirectory.NAME))
+                .deleteOlderThan(Clock.systemUTC().millis() - ExportDirectory.MAX_AGE_MS)
+        }
     }
 }
