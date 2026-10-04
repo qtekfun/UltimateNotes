@@ -1,0 +1,48 @@
+// SPDX-FileCopyrightText: 2026 UltimateNotes contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+package com.qtekfun.ultimatenotes.data.settings
+
+import app.cash.turbine.test
+import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
+
+class SettingsRepositoryTest {
+    private val preferences = FakePreferences()
+    private val repository = SettingsRepository(preferences)
+
+    @Test
+    fun `defaults follow the system with wallpaper colors`() = runTest {
+        repository.settings.test {
+            assertEquals(
+                AppSettings(ThemeMode.SYSTEM, amoled = false, dynamicColor = true),
+                awaitItem()
+            )
+        }
+    }
+
+    @Test
+    fun `every change is emitted and stored`() = runTest {
+        repository.settings.test {
+            awaitItem()
+            repository.setTheme(ThemeMode.DARK)
+            assertEquals(ThemeMode.DARK, awaitItem().theme)
+            repository.setAmoled(true)
+            assertEquals(true, awaitItem().amoled)
+            repository.setDynamicColor(false)
+            assertEquals(
+                AppSettings(ThemeMode.DARK, amoled = true, dynamicColor = false),
+                awaitItem()
+            )
+        }
+    }
+
+    @Test
+    fun `an unknown stored theme falls back to the system`() = runTest {
+        preferences.values["theme"] = "SEPIA"
+        repository.settings.test {
+            assertEquals(ThemeMode.SYSTEM, awaitItem().theme)
+        }
+    }
+}
