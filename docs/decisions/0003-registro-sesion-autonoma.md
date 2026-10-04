@@ -38,7 +38,7 @@ con `git revert` del PR indicado.
 | 15 | Previsualizaciones y fragmentos de búsqueda en texto plano (`PlainText`). | El Markdown crudo se veía en la lista. | feat/clean-markdown-previews |
 | 16 | El editor mantiene visibles los símbolos de Markdown en el 1.0. | Decisión del usuario (2A); revisar para 1.1. | — |
 | 17 | `minSdk` sube de 26 a 31. | Decisión del usuario: no se instalan emuladores y T17b no puede cubrir API 26/30. Se elimina el flujo de bloqueo para Android 8–10, las carpetas `-v31` y las comprobaciones de versión. | feat/min-sdk-31 |
-| 18 | Icono: opción 4 (hoja y lápiz sobre coral). | Elegido por el usuario; ver 0012. | feat/icon-pencil |
+| 18 | Icono: opción 4 (hoja y lápiz), primero en coral y luego en el azul de la app `#0B63CE` a petición del usuario. | Coincide con el fondo del icono de Tasks; ver 0012. | feat/icon-pencil, feat/icon-app-blue |
 
 ## Deuda conocida
 - (Resuelta en #25) Test intermitente `EditorViewModelTest ... after the debounce`.
