@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 UltimateNotes contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<!-- Themed icon layer: only the alpha counts. The text lines and a gap around the pencil are
+     holes (opposite winding), so the sheet does not turn into a solid blob. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group>
+        <clip-path android:pathData="M0,0H108V108H0ZM48.47,71.53L64.62,65.21L86.33,43.5L76.5,33.67L54.79,55.38Z" />
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M32,28H62A4,4 0 0 1 66,32V76A4,4 0 0 1 62,80H32A4,4 0 0 1 28,76V32A4,4 0 0 1 32,28ZM34,44A2,2 0 0 0 36,46H58A2,2 0 0 0 60,44A2,2 0 0 0 58,42H36A2,2 0 0 0 34,44ZM34,54A2,2 0 0 0 36,56H58A2,2 0 0 0 60,54A2,2 0 0 0 58,52H36A2,2 0 0 0 34,54ZM34,64A2,2 0 0 0 36,66H46A2,2 0 0 0 48,64A2,2 0 0 0 46,62H36A2,2 0 0 0 34,64Z" />
+    </group>
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M52,68L63.5,63.5L83.5,43.5L76.5,36.5L56.5,56.5Z" />
+</vector>
