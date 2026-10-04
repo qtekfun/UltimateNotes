@@ -5,8 +5,6 @@
 -->
 <resources>
     <string name="app_name">UltimateNotes</string>
-    <string name="home_title">Notas</string>
-    <string name="home_version">Versión %1$s</string>
     <string name="login_title">Inicia sesión en Nextcloud</string>
     <string name="login_server_label">Dirección del servidor</string>
     <string name="login_button">Iniciar sesión</string>
@@ -24,4 +22,33 @@
     <string name="login_error_notes_missing">La aplicación Notas no está instalada o activada en este servidor.</string>
     <string name="login_error_unsupported_api">La aplicación Notas de este servidor es demasiado antigua. Actualízala a una versión compatible con la API 1.2 o posterior.</string>
     <string name="login_error_unknown">Algo ha fallado al iniciar sesión. Vuelve a intentarlo.</string>
+    <string name="folder_all">Todas las notas</string>
+    <string name="folder_favorites">Favoritas</string>
+    <string name="folder_none">Sin carpeta</string>
+    <string name="folders_title">Carpetas</string>
+    <string name="folders_open">Abrir carpetas</string>
+    <string name="folders_settings">Ajustes</string>
+    <string name="main_empty">Aún no hay notas aquí.</string>
+    <string name="search_placeholder">Buscar</string>
+    <string name="search_field">Buscar notas</string>
+    <string name="note_new">Nota nueva</string>
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_back">Atrás</string>
+    <string name="settings_account">Cuenta</string>
+    <string name="settings_account_signed_in">%1$s en %2$s</string>
+    <string name="settings_logout">Cerrar sesión</string>
+    <string name="settings_logging_out">Cerrando sesión…</string>
+    <string name="settings_appearance">Apariencia</string>
+    <string name="settings_theme">Tema</string>
+    <string name="theme_system">Predeterminado del sistema</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Oscuro</string>
+    <string name="settings_amoled">Negro puro</string>
+    <string name="settings_amoled_hint">Fondos negros en modo oscuro, para pantallas OLED.</string>
+    <string name="settings_dynamic_color">Colores del fondo de pantalla</string>
+    <string name="settings_dynamic_color_hint">Usa los colores de tu fondo de pantalla (Android 12 o posterior).</string>
+    <string name="settings_language">Idioma</string>
+    <string name="settings_language_hint">UltimateNotes usa el idioma de tu dispositivo.</string>
+    <string name="settings_about">Acerca de</string>
+    <string name="settings_version">Versión %1$s</string>
 </resources>
