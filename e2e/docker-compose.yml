@@ -1,0 +1,16 @@
+# SPDX-FileCopyrightText: 2026 UltimateNotes contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Throwaway Nextcloud for the E2E suite (see e2e/setup.sh). SQLite, no volumes: `down` wipes it.
+# The admin credentials are fixed on purpose: this server only listens on localhost.
+services:
+  nextcloud:
+    image: nextcloud:33.0.9-apache
+    container_name: ultimatenotes-e2e-nextcloud
+    ports:
+      - "127.0.0.1:8080:80"
+    environment:
+      SQLITE_DATABASE: nextcloud
+      NEXTCLOUD_ADMIN_USER: admin
+      NEXTCLOUD_ADMIN_PASSWORD: admin-e2e-only
+      NEXTCLOUD_TRUSTED_DOMAINS: localhost

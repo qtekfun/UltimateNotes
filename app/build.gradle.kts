@@ -97,7 +97,8 @@ android {
     }
 
     testOptions {
-        unitTests.all { it.useJUnitPlatform() }
+        // E2E tests (tag "e2e") need a real Nextcloud: only `./gradlew e2eTest` runs them.
+        unitTests.all { it.useJUnitPlatform { excludeTags("e2e") } }
     }
 
     sourceSets {
@@ -290,6 +291,26 @@ val checkForbiddenDependencies = tasks.register("checkForbiddenDependencies") {
 
 tasks.named("check") {
     dependsOn(checkForbiddenDependencies)
+}
+
+// E2E against a real Nextcloud with the Notes app (RELEASING.md). Reads NC_URL,
+// NC_USER and NC_APP_PASSWORD from the environment; without them the tests are skipped. Reuses
+// the unit-test classes and classpath, selecting only the "e2e" tag. Not part of `check`.
+afterEvaluate {
+    val unitTests = tasks.named<Test>("testDebugUnitTest")
+    tasks.register<Test>("e2eTest") {
+        group = "verification"
+        description = "Runs the E2E suite against a real Nextcloud (see RELEASING.md)."
+        dependsOn(unitTests.get().taskDependencies)
+        testClassesDirs = files(unitTests.map { it.testClassesDirs })
+        classpath = files(unitTests.map { it.classpath })
+        useJUnitPlatform { includeTags("e2e") }
+        outputs.upToDateWhen { false }
+        testLogging { events("passed", "skipped", "failed") }
+        listOf("NC_URL", "NC_USER", "NC_APP_PASSWORD", "E2E_ALLOW_REMOTE").forEach { name ->
+            System.getenv(name)?.let { environment(name, it) }
+        }
+    }
 }
 
 dependencies {

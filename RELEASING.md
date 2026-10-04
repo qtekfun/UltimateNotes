@@ -47,14 +47,31 @@ Without these variables, `./gradlew assembleRelease` builds an unsigned APK, whi
 5. The **Release** workflow checks that the tag matches `appVersion`, verifies reproducibility, runs `./gradlew check`, builds the signed APK and publishes a GitHub Release with the notes of that version from `CHANGELOG.md`. Release candidates (`-rc.N`, with a matching `## [X.Y.Z-rc.N]` section) are marked as pre-releases.
 6. F-Droid picks the new tag up by itself (`UpdateCheckMode: Tags`, final versions only: release candidates are not offered there).
 
-## E2E manual checklist (real Nextcloud)
+## E2E automated (real Nextcloud in Docker)
 
-Run it on a device with the signed APK and a real Nextcloud with the Notes app. Use only a dedicated test folder and notes whose title starts with `[test]`; never touch the user's own notes. Delete the test notes afterwards.
+`./gradlew e2eTest` drives the real `NotesClient` and sync engine (in-memory Room, two simulated clients) against a throwaway Nextcloud with the Notes app. Run it before every release; the **E2E** workflow also runs it nightly and on PRs that touch `data/` or `sync/` (not required for merge).
+
+```sh
+docker compose -f e2e/docker-compose.yml up -d
+eval "$(e2e/setup.sh | grep '^export ')"   # waits, installs Notes, creates an app password
+./gradlew e2eTest
+docker compose -f e2e/docker-compose.yml down -v
+```
+
+Without `NC_URL`, `NC_USER` and `NC_APP_PASSWORD` the tests are skipped. A server that is not localhost is refused unless `E2E_ALLOW_REMOTE=1`; everything the suite creates is named `[test]...` and deleted afterwards.
+
+Automated: create/edit/delete, title sanitizing and `(2)` numbering, rename, move to folders and subfolders, favorite, list ETag 304, `If-Match` and 412, chunked pagination and deletion inference, conflict copy without losing text, offline-to-online convergence of two clients, Unicode/emoji/CRLF/Markdown round trip, wrong password.
+
+## E2E manual checklist (real device, real Nextcloud)
+
+The sync items above are covered by `e2eTest`; what remains needs the app on a device (login, UI, system features) or a server of your own.
+
+Use the signed APK and a real Nextcloud with the Notes app. Use only a dedicated test folder and notes whose title starts with `[test]`; never touch the user's own notes. Delete the test notes afterwards.
 
 - [ ] Log in with Login Flow v2 on a server with Notes installed; the account appears and the notes list syncs.
 - [ ] Log in on a server without the Notes app: a clear error is shown.
 - [ ] Create `[test] offline` in airplane mode; reconnect; it appears in the web UI with the same text.
-- [ ] Edit a `[test]` note in the app and in the web UI at the same time (one offline); after syncing no text is lost and the conflict leaves a local copy.
+- [ ] Edit a `[test]` note in the app and in the web UI at the same time (one offline); after syncing no text is lost and the conflict leaves a local copy. (Engine side automated; check it on the device, in airplane mode.)
 - [ ] Rename, move to another folder, favorite and delete `[test]` notes; each change reaches the server and a second client.
 - [ ] A checklist `[test] checklist` toggles items, and the Markdown on the server stays valid (`- [ ]` / `- [x]`).
 - [ ] A note with syntax the editor does not support (tables, HTML) is saved unchanged after an unrelated edit.
