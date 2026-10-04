@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 UltimateNotes contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<resources>
+    <string name="app_name">UltimateNotes</string>
+    <string name="home_title">Notes</string>
+    <string name="home_version">Version %1$s</string>
+</resources>
