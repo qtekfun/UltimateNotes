@@ -40,6 +40,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.qtekfun.ultimatenotes.R
 import com.qtekfun.ultimatenotes.domain.auth.LoginError
 import com.qtekfun.ultimatenotes.domain.auth.LoginState
+import com.qtekfun.ultimatenotes.ui.settings.RestoreBackupButton
 
 /** Minimal login (T04): the server address, then Nextcloud Login Flow v2 in the browser. */
 @Composable
@@ -85,6 +86,7 @@ fun LoginScreen(modifier: Modifier = Modifier, viewModel: LoginViewModel = viewM
                 onReopen = { waiting?.let { uriHandler.openUri(it.loginUrl) } },
                 onCancel = viewModel::cancel
             )
+            if (!state.busy) RestoreBackupButton()
         }
     }
 }

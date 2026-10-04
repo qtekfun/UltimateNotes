@@ -70,7 +70,10 @@ fun SettingsScreen(
         onSyncInterval = viewModel::setSyncInterval,
         onSyncNetwork = viewModel::setSyncNetwork,
         modifier = modifier,
-        extraSections = { LockSettingsSection() }
+        extraSections = {
+            LockSettingsSection()
+            BackupSection()
+        }
     )
 }
 
