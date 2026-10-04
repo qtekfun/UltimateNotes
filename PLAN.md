@@ -16,7 +16,7 @@ Hitos: **M0** = CI con artefacto debug (T01) · **M1** = primera versión usable
 
 ## Fase 2 — Sincronización
 - [x] **T07 Cola de sync + resolutor de conflictos** (**100% cobertura**): estados, backoff, idempotencia, conflicto → copia local. Test de convergencia con secuencias aleatorias.
-- [ ] **T08 Workers**: sync al abrir/guardar/periódica/manual, red restringida configurable.
+- [x] **T08 Workers**: sync al abrir/guardar/periódica/manual, red restringida configurable.
 
 ## Fase 3 — UI (calco Apple Notes)
 - [x] **T09 Shell y tema**: navegación, **cajón de carpetas con menú hamburguesa a la izquierda**, ajustes base, tema dinámico/oscuro/AMOLED, i18n EN/ES (copiar de Tasks).

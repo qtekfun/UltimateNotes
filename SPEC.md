@@ -38,6 +38,17 @@ Recordatorios/notificaciones, etiquetas propias, colores de nota, adjuntos e im�
 - Detección de versión: consultar `/api/v1/settings` y la versión de la app Notes; fallar con mensaje claro si la API es < 1.0.
 - Errores: sellados (`Offline`, `Unauthorized`, `NotesAppMissing`, `Conflict`, `Server(code)`), nunca excepciones a la UI.
 
+**Decisiones de implementación (T03, T07, T08), verificadas contra `docs/api/v1.md` de nextcloud/notes:**
+- Con `chunkSize` el servidor envía las notas podadas (solo `id`) únicamente en el ÚLTIMO trozo: los borrados se infieren solo tras recorrer la lista completa (respuesta sin `X-Notes-Chunk-Cursor`). `pruneBefore` sale de la cabecera `Last-Modified`, no de la hora local. Con `pruneBefore` las notas sin cambios traen solo `id`.
+- `chunkSize`/cursor, `If-Match`/etag, `readonly` y `/settings` requieren API 1.2; en servidores antiguos se ignoran los trozos. 400 en `/settings` = `UnsupportedApi`.
+- **El servidor compara `If-Match` con el etag entre comillas dobles** (`Helper::getNoteWithETagCheck`): el cliente lo envía entrecomillado (con el etag crudo siempre devolvía 412).
+- Errores extra: 403 → `Forbidden` (solo lectura), 404 en una nota → `NotFound` (404 en colección/`/settings` → `NotesAppMissing`), 2xx no JSON → `InvalidResponse`. El cuerpo del 412 trae la nota actual del servidor (`Conflict.serverNote`).
+- Conflicto: mismo texto → se adopta el etag nuevo (si difiere carpeta/favorita, sigue `DIRTY` para subirla); texto distinto → el servidor se queda en la nota original y el texto local pasa a una nota NUEVA `"<título> (conflicto <fecha>)"` (sufijo en la primera línea no vacía, para que el título derivado coincida con el del servidor). `SyncState.CONFLICT` nunca se produce: se resuelve al momento.
+- PUT con 404 (o nota `DIRTY` ausente de un recorrido completo): la edición local se recrea como nota nueva. Editar gana a borrar en ambos sentidos (DELETE no puede ser condicional). Texto local vacío frente a servidor cambiado: gana el servidor.
+- Cada escritura local es compare-and-set: una edición hecha durante un sync nunca se pisa; esa nota se salta (`skipped`) y no se avanza el checkpoint.
+- Solo `Offline`, `Unauthorized`, `NotesAppMissing` y `UnsupportedApi` detienen una ejecución; los errores por nota (5xx, 403, 412 sin cuerpo) se cuentan en `SyncReport.skipped`.
+- **Workers (T08):** trabajo único `sync-now` (al abrir, tras guardar y pull-to-refresh; `KEEP`, expedited si el sistema lo permite) y periódico único `sync-periodic` (ajuste: desactivado / 15 min / 1 h por defecto / 6 h). Red configurable: cualquiera o solo sin tarifa limitada; el refresco manual usa cualquier red. Se reintenta (`Result.retry`, backoff exponencial desde `BackoffPolicy.initial`, máx. `maxAttempts`) si `skipped > 0` o el error es transitorio; nunca con `Unauthorized`/`NotesAppMissing`/`UnsupportedApi`. El estado (`SyncStatus`: reposo/sincronizando/error(tipo) + última sincronización) es observable y persistente.
+
 ## 6. Editor
 - WYSIWYG sobre Markdown: el documento en memoria es un modelo de bloques/spans; al guardar se serializa a Markdown.
 - Soportado: párrafos, `#`–`###`, negrita, cursiva, tachado, listas con viñetas y numeradas, checklists (`- [ ]`/`- [x]`), citas, enlaces, código en línea.
