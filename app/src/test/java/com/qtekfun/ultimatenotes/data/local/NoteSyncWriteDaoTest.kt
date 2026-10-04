@@ -59,7 +59,12 @@ class NoteSyncWriteDaoTest {
 
     @Test
     fun `completing a push for a row that no longer exists does nothing`() = runBlocking {
-        dao.completePush(NoteEntity(localId = 99, content = "gone"), id = 5, etag = "e")
+        dao.completePush(
+            NoteEntity(localId = 99, content = "gone"),
+            id = 5,
+            etag = "e",
+            title = "t"
+        )
 
         assertEquals(emptyList<NoteEntity>(), database.noteSyncDao().getAll())
     }
@@ -69,10 +74,44 @@ class NoteSyncWriteDaoTest {
         val pushed = stored("text")
         dao.update(pushed.copy(syncState = SyncState.DELETED))
 
-        dao.completePush(pushed, id = 3, etag = "e2")
+        dao.completePush(pushed, id = 3, etag = "e2", title = "t")
 
         val row = checkNotNull(dao.get(pushed.localId))
         assertEquals(SyncState.DELETED, row.syncState)
         assertEquals("e2", row.lastSyncedEtag)
     }
+
+    @Test
+    fun `completing a push adopts the title the server stored`() = runBlocking {
+        val pushed = stored("text").let { it.copy(title = "a/b").also { n -> dao.update(n) } }
+
+        dao.completePush(pushed, id = 3, etag = "e2", title = "ab (2)")
+
+        val row = checkNotNull(dao.get(pushed.localId))
+        assertEquals("ab (2)", row.title)
+        assertEquals(SyncState.SYNCED, row.syncState)
+    }
+
+    @Test
+    fun `completing a push never overwrites a title edited meanwhile`() = runBlocking {
+        val pushed = stored("text").let { it.copy(title = "sent").also { n -> dao.update(n) } }
+        dao.update(pushed.copy(title = "typed while syncing"))
+
+        dao.completePush(pushed, id = 3, etag = "e2", title = "sent")
+
+        val row = checkNotNull(dao.get(pushed.localId))
+        assertEquals("typed while syncing", row.title)
+        assertEquals(SyncState.DIRTY, row.syncState)
+        assertEquals("e2", row.lastSyncedEtag)
+    }
+
+    @Test
+    fun `completing a push keeps the local title if the server returned a blank one`() =
+        runBlocking {
+            val pushed = stored("text").let { it.copy(title = "mine").also { n -> dao.update(n) } }
+
+            dao.completePush(pushed, id = 3, etag = "e2", title = "")
+
+            assertEquals("mine", checkNotNull(dao.get(pushed.localId)).title)
+        }
 }

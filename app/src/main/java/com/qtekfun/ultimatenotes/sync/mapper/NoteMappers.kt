@@ -30,6 +30,15 @@ fun NoteDto.toSyncedEntity(localId: Long = 0): NoteEntity = NoteEntity(
     lastSyncedEtag = etag
 )
 
-/** What to upload for a note: the attributes the API lets clients write (the title is derived). */
-fun NoteEntity.toWriteDto(): NoteWriteDto =
-    NoteWriteDto(content = content, category = category, favorite = favorite)
+/**
+ * What to upload for a note: every attribute the API lets clients write. The title is its own
+ * field (API >= 1.0, no automatic rename from the content), so it is always sent; a blank one is
+ * left out because the server would replace it with "New note". The server returns the sanitized
+ * title, which the sync layer adopts.
+ */
+fun NoteEntity.toWriteDto(): NoteWriteDto = NoteWriteDto(
+    title = title.takeIf { it.isNotBlank() },
+    content = content,
+    category = category,
+    favorite = favorite
+)

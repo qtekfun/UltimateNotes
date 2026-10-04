@@ -278,6 +278,72 @@ class SyncEnginePullTest {
     }
 
     @Test
+    fun `a pulled note keeps the server title as it is, not the first line`() = runBlocking {
+        val a = server.put("First line\nbody", title = "Custom title")
+
+        success(client.sync())
+
+        assertEquals("Custom title", client.byContent("First line\nbody").title)
+
+        server.retitle(a, "Renamed on the web")
+        success(client.sync())
+
+        val row = client.byContent("First line\nbody")
+        assertEquals("Renamed on the web", row.title)
+        assertEquals(SyncState.SYNCED, row.syncState)
+    }
+
+    @Test
+    fun `an unsynced title edit is never overwritten by a pull`() = runBlocking {
+        val a = server.put("A")
+        client.sync()
+        val id = client.byContent("A").localId
+        server.retitle(a, "Server title")
+        racy = { row ->
+            racy = null
+            client.dao.update(row.copy(title = "typed title", syncState = SyncState.DIRTY))
+        }
+
+        val report = success(client.sync())
+
+        assertTrue(report.skipped >= 1)
+        // The push then meets the server change (412): neither title is lost.
+        assertEquals(1, report.forked)
+        assertEquals("Server title", checkNotNull(client.dao.get(id)).title)
+        assertEquals(
+            setOf("Server title", "typed title (conflicto 2026-10-04)"),
+            server.titles().toSet()
+        )
+    }
+
+    @Test
+    fun `different titles with the same text are a conflict that keeps both`() = runBlocking {
+        val a = server.put("A")
+        client.sync()
+        client.retitle(client.byContent("A").localId, "Mine")
+        server.retitle(a, "Theirs")
+
+        val report = success(client.sync())
+
+        assertEquals(1, report.forked)
+        assertEquals(setOf("Theirs", "Mine (conflicto 2026-10-04)"), server.titles().toSet())
+        assertEquals(listOf("A", "A"), server.contents())
+        assertEquals(setOf(SyncState.SYNCED), client.all().map { it.syncState }.toSet())
+    }
+
+    @Test
+    fun `a title edit on a note the server did not change is simply uploaded`() = runBlocking {
+        val a = server.put("A")
+        client.sync()
+        client.retitle(client.byContent("A").localId, "Mine")
+
+        val report = success(client.sync())
+
+        assertEquals(0, report.forked)
+        assertEquals("Mine", server.titleOf(a))
+    }
+
+    @Test
     fun `a conflict found while pulling keeps the server text and uploads the local copy`() =
         runBlocking {
             val a = server.put("A")
@@ -289,10 +355,8 @@ class SyncEnginePullTest {
 
             assertEquals(1, report.forked)
             assertEquals(1, report.pushed)
-            assertEquals(
-                setOf("A from the server", "A edited (conflicto 2026-10-04)"),
-                server.contents().toSet()
-            )
+            assertEquals(setOf("A from the server", "A edited"), server.contents().toSet())
+            assertEquals(setOf("A", "A (conflicto 2026-10-04)"), server.titles().toSet())
             assertEquals(setOf(SyncState.SYNCED), client.all().map { it.syncState }.toSet())
         }
 
@@ -335,9 +399,10 @@ class SyncEnginePullTest {
         // The push then meets the server change (412): server text stays, typed text is a copy.
         assertEquals(1, report.forked)
         assertEquals(
-            setOf("A from the server", "typed meanwhile (conflicto 2026-10-04)"),
+            setOf("A from the server", "typed meanwhile"),
             server.contents().toSet()
         )
+        assertEquals(setOf("A", "A (conflicto 2026-10-04)"), server.titles().toSet())
     }
 
     @Test
@@ -356,9 +421,10 @@ class SyncEnginePullTest {
 
             assertTrue(report.skipped >= 1)
             assertEquals(
-                setOf("A from the server", "A edited again (conflicto 2026-10-04)"),
+                setOf("A from the server", "A edited again"),
                 server.contents().toSet()
             )
+            assertEquals(setOf("A", "A (conflicto 2026-10-04)"), server.titles().toSet())
         }
 
     @Test

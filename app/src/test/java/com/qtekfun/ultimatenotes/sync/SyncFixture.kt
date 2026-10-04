@@ -63,13 +63,20 @@ class SyncFixture(
     suspend fun visible(): List<Triple<String, String, Boolean>> = all()
         .filter { it.syncState != SyncState.DELETED }
         .map { Triple(it.content, it.category, it.favorite) }
-        .sortedBy { it.first }
+        .sortedWith(compareBy({ it.first }, { it.second }, { it.third }))
 
     // What the UI will do (T10/T11), reproduced here to drive the tests.
 
-    suspend fun create(content: String, category: String = ""): Long = dao.insert(
-        NoteEntity(content = content, category = category, title = content.lines().first())
-    )
+    suspend fun create(
+        content: String,
+        category: String = "",
+        title: String = content.lines().first()
+    ): Long = dao.insert(NoteEntity(content = content, category = category, title = title))
+
+    suspend fun retitle(localId: Long, title: String) {
+        val note = checkNotNull(dao.get(localId))
+        dao.update(note.copy(title = title, syncState = dirtied(note)))
+    }
 
     suspend fun edit(localId: Long, content: String) {
         val note = checkNotNull(dao.get(localId))

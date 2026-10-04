@@ -3,6 +3,8 @@
 
 package com.qtekfun.ultimatenotes.data.api
 
+import com.qtekfun.ultimatenotes.data.local.entity.NoteEntity
+import com.qtekfun.ultimatenotes.sync.mapper.toWriteDto
 import java.util.Base64
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
@@ -142,6 +144,33 @@ class NotesClientTest {
         val request = server.takeRequest()
         assertEquals("POST", request.method)
         assertEquals("""{"title":"New","category":"c","content":"body"}""", request.body?.utf8())
+    }
+
+    @Test
+    fun `a local row is posted with its title as a separate field`() = runTest {
+        reply(200, """{"id":9,"etag":"e","title":"Groceries (2)","content":"Milk"}""")
+        val row = NoteEntity(title = "Groceries", content = "Milk", category = "Home")
+
+        val created = success(client.createNote(row.toWriteDto()))
+
+        assertEquals("Groceries (2)", created.title)
+        val body = server.takeRequest().body?.utf8().orEmpty()
+        assertEquals(
+            """{"title":"Groceries","category":"Home","content":"Milk","favorite":false}""",
+            body
+        )
+    }
+
+    @Test
+    fun `a local row is put with its title even when only the text changed`() = runTest {
+        reply(200, """{"id":9,"etag":"e2","title":"Groceries","content":"Milk, eggs"}""")
+        val row = NoteEntity(id = 9, title = "Groceries", content = "Milk, eggs")
+
+        success(client.updateNote(9, "e1", row.toWriteDto()))
+
+        val body = server.takeRequest().body?.utf8().orEmpty()
+        assertTrue(""""title":"Groceries"""" in body, body)
+        assertTrue(""""content":"Milk, eggs"""" in body, body)
     }
 
     @Test

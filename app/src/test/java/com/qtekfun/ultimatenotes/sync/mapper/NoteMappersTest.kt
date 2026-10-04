@@ -56,19 +56,25 @@ class NoteMappersTest {
     }
 
     @Test
-    fun `a row is uploaded with its content, folder and favorite only`() {
+    fun `a row is uploaded with its title, content, folder and favorite`() {
         val entity =
             NoteEntity(
                 id = 1,
-                title = "derived",
+                title = "Groceries",
                 category = "Home",
                 content = "text",
                 favorite = true
             )
 
         assertEquals(
-            NoteWriteDto(content = "text", category = "Home", favorite = true),
+            NoteWriteDto(title = "Groceries", content = "text", category = "Home", favorite = true),
             entity.toWriteDto()
         )
+    }
+
+    @Test
+    fun `a blank title is left out so the server does not rename the note to New note`() {
+        assertNull(NoteEntity(title = "", content = "text").toWriteDto().title)
+        assertNull(NoteEntity(title = "  ", content = "text").toWriteDto().title)
     }
 }

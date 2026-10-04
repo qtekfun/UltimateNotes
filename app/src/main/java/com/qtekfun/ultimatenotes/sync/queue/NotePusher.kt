@@ -42,7 +42,12 @@ internal class NotePusher(
     private suspend fun create(note: NoteEntity, counters: SyncCounters): ApiError? =
         when (val result = client.createNote(note.toWriteDto())) {
             is ApiResult.Success -> {
-                writes.completePush(note, result.value.id, result.value.localEtag)
+                writes.completePush(
+                    note,
+                    result.value.id,
+                    result.value.localEtag,
+                    result.value.title
+                )
                 counters.pushed++
                 null
             }
@@ -70,7 +75,7 @@ internal class NotePusher(
         counters: SyncCounters
     ): ApiError? = when (val result = client.updateNote(id, base, note.toWriteDto())) {
         is ApiResult.Success -> {
-            writes.completePush(note, id, result.value.localEtag)
+            writes.completePush(note, id, result.value.localEtag, result.value.title)
             counters.pushed++
             null
         }
