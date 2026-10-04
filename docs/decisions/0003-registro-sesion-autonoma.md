@@ -28,11 +28,23 @@ con `git revert` del PR indicado.
 | 5 | Botón "Sincronizar ahora" en la barra superior; el spinner de pull-to-refresh sigue el estado real. | Petición del usuario. | #17 |
 | 6 | Backup: formato propio `UNBK` (PBKDF2 600k + AES-256-GCM); el bloqueo de la app no se restaura. | Evitar bloquear un móvil sin pantalla de bloqueo. | #15 |
 | 7 | Ediciones ganan a borrados en ambos sentidos; 404 en PUT recrea la nota. | DELETE no puede ser condicional. | #9 |
+| 8 | Exportar solo desde el menú del editor; el `.md` lleva solo el cuerpo (el título va en el nombre del fichero). | Mantener el Markdown fuente intacto. | #18 |
+| 9 | El widget queda bloqueado mientras el ajuste de bloqueo esté activo, aunque la app esté desbloqueada; sigue el modo claro/oscuro del sistema, no el tema de la app. | La sesión de desbloqueo sobrevive a la app en pantalla. Ver ADR 0002. | #20 |
+| 10 | E2E contra Nextcloud real en Docker (`e2e.yml`), no contra el servidor del usuario. | Validar sin dispositivo ni cuenta. Ver ADR 0004. | #21 |
+| 11 | Contraseña solo al host de la cuenta; se rechazan redirecciones https→http y URLs con credenciales. Guarda en `check` contra dependencias prohibidas. | Revisión de seguridad. Ver ADR 0005. | #22 |
+| 12 | Receta F-Droid con `commit` y `AllowedAPKSigningKeys` como `TODO`; sin capturas fabricadas. Ver ADR 0006. | Solo el mantenedor puede rellenarlos. | #23 |
+| 13 | Bug real corregido: `close()` cancelaba un autoguardado en curso y no se pedía el sync. Test intermitente estabilizado (30/30). Ver ADR 0007. | Hallado al estabilizar el test. | #25 |
+| 14 | Capturas de F-Droid con un test instrumentado y datos de demostración; script que exige indicar el dispositivo. Ver ADR 0008. | No requiere cuenta ni servidor. | #24 |
 
 ## Deuda conocida
-- Test intermitente en CI: `EditorViewModelTest > renaming an existing note saves the title only,
-  after the debounce` falló una vez y pasó al relanzar. Mezcla tiempo virtual y espera real sobre
-  hilos de Room. Pendiente de estabilizar.
+- (Resuelta en #25) Test intermitente `EditorViewModelTest ... after the debounce`.
+- `ObserveFoldersTest` falló dos veces en una máquina muy cargada y pasa solo; vigilar.
+- El pull inicial de 5 000 notas tarda ~8 s en JVM (una transacción por nota); puede ser peor en
+  un teléfono. Sin tocar: el motor de sync exige 100 % de cobertura y no hay medición en dispositivo.
+- Limitación de sync: favorito/carpeta de un cliente contra edición de texto de otro deja una copia
+  "(conflicto …)" extra sin pérdida de texto (ADR 0004).
+- Las instalaciones en el OPPO PGEM10 fallaron con `Failure [-99]` (confirmación de OPPO sin
+  aceptar); nada se ha ejecutado en él.
 - La tablet Huawei (MRO-W09) conserva la app de depuración y el APK de tests instrumentados
   (`com.qtekfun.ultimatenotes.test`) instalados por un agente. El test
   `tappingACheckboxTogglesExactlyOneCharacterAndUndoRestoresIt` falla ahí también en `master`
