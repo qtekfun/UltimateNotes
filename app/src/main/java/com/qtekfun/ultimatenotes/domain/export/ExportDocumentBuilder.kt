@@ -34,7 +34,7 @@ object ExportDocumentBuilder {
     fun build(title: String, content: String): List<ExportBlock> {
         val text = content.replace("\r\n", "\n").replace('\r', '\n')
         val body = Lines(text).blocks().trimBlank()
-        val heading = title.trim().ifEmpty { NoteSummary.title(text) }
+        val heading = title.trim().ifEmpty { NoteSummary.firstLine(text) }
         if (heading.isEmpty()) return body
         val first = body.firstOrNull()
         val isTitleLine = first != null && first.marker == null && first.quoteDepth == 0 &&

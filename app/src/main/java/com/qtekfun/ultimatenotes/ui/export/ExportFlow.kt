@@ -37,11 +37,11 @@ private class ExportJob(val format: ExportFormat, val title: String, val content
  * The export dialog (share or save to a file, as Markdown or PDF) and what follows from a choice.
  * Stays in the composition while hidden because the "save as" picker returns to it.
  *
- * @param content the note's current Markdown, read when an option is chosen.
+ * @param title the note's current title and [content] its Markdown, read when an option is chosen.
  */
 @Composable
 fun ExportFlow(
-    noteId: Long,
+    title: () -> String,
     content: () -> String,
     visible: Boolean,
     onDismiss: () -> Unit,
@@ -83,15 +83,16 @@ fun ExportFlow(
     if (!visible) return
     fun choose(format: ExportFormat, share: Boolean) {
         val text = content()
+        val name = viewModel.titleOf(title(), text)
         onDismiss()
         run {
-            val job = ExportJob(format, viewModel.titleOf(noteId, text), text)
+            val job = ExportJob(format, name, text)
             if (share) {
                 startShare(context, viewModel.stage(format, job.title, text))
             } else {
                 pending = job
-                val name = ExportFileName.of(job.title, format)
-                (if (format == ExportFormat.PDF) savePdf else saveMarkdown).launch(name)
+                val fileName = ExportFileName.of(job.title, format)
+                (if (format == ExportFormat.PDF) savePdf else saveMarkdown).launch(fileName)
             }
         }
     }

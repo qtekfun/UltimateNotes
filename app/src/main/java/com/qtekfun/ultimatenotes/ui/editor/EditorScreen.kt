@@ -111,7 +111,7 @@ fun EditorScreen(
         modifier = modifier
     )
     ExportFlow(
-        noteId = noteId,
+        title = { viewModel.title.text.toString() },
         content = { viewModel.text.text.toString() },
         visible = exporting,
         onDismiss = { exporting = false }

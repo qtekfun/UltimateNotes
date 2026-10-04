@@ -7,7 +7,6 @@ import android.content.Context
 import android.net.Uri
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
-import com.qtekfun.ultimatenotes.data.local.dao.NoteDao
 import com.qtekfun.ultimatenotes.domain.export.ExportDirectory
 import com.qtekfun.ultimatenotes.domain.export.ExportFileName
 import com.qtekfun.ultimatenotes.domain.export.ExportFormat
@@ -27,13 +26,12 @@ class StagedFile(val uri: Uri, val mimeType: String, val name: String)
 @HiltViewModel
 class ExportViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val noteDao: NoteDao,
     private val pdf: PdfExporter,
     private val io: CoroutineDispatcher
 ) : ViewModel() {
-    /** The stored title of [noteId], or the note's first line when it has none (or is unsaved). */
-    suspend fun titleOf(noteId: Long, content: String): String =
-        noteDao.get(noteId)?.title?.takeIf { it.isNotBlank() } ?: NoteSummary.title(content)
+    /** The title to export under: the note's own, or its first line when it has none. */
+    fun titleOf(title: String, content: String): String =
+        title.trim().ifEmpty { NoteSummary.firstLine(content) }
 
     /** The file's bytes: the Markdown source unchanged, or the rendered PDF. */
     suspend fun render(format: ExportFormat, title: String, content: String): ByteArray =
