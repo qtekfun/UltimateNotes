@@ -97,7 +97,9 @@ class EditorTest {
     /**
      * Where the glyph at [offset] is drawn, in the node's own coordinates, asked of the field's
      * text layout (the same one the editor hit-tests with), so it does not depend on screen size,
-     * density or font scale. The field draws its text inside [TEXT_PADDING].
+     * density or font scale. The field's semantics node is the area inside [TEXT_PADDING] (checked
+     * on a device: node and pointer input are both 1328 px wide on a 1440 px screen), so the
+     * layout's coordinates are the node's own and no padding is added.
      */
     private fun centerOfGlyph(field: SemanticsNodeInteraction, offset: Int): Offset {
         val layouts = mutableListOf<TextLayoutResult>()
@@ -105,8 +107,7 @@ class EditorTest {
         check(read.action?.invoke(layouts) == true && layouts.isNotEmpty()) {
             "the field exposes no text layout"
         }
-        val padding = with(compose.density) { TEXT_PADDING.toPx() }
-        return layouts.first().getBoundingBox(offset).center + Offset(padding, padding)
+        return layouts.first().getBoundingBox(offset).center
     }
 
     @Test
