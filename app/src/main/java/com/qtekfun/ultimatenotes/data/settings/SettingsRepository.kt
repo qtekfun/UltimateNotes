@@ -18,6 +18,8 @@ private const val KEY_THEME = "theme"
 private const val KEY_AMOLED = "amoled"
 private const val KEY_DYNAMIC_COLOR = "dynamic_color"
 private const val KEY_SORT_ORDER = "sort_order"
+private const val KEY_SYNC_INTERVAL = "sync_interval"
+private const val KEY_SYNC_NETWORK = "sync_network"
 
 /**
  * Per-device preferences. They are not note data, so they live in SharedPreferences rather than
@@ -46,16 +48,28 @@ class SettingsRepository @Inject constructor(
     fun setSortOrder(order: NoteSortOrder) =
         preferences.edit { putString(KEY_SORT_ORDER, order.name) }
 
+    fun setSyncInterval(interval: SyncInterval) =
+        preferences.edit { putString(KEY_SYNC_INTERVAL, interval.name) }
+
+    fun setSyncNetwork(network: SyncNetwork) =
+        preferences.edit { putString(KEY_SYNC_NETWORK, network.name) }
+
     private fun read(): AppSettings {
         val defaults = AppSettings()
         val theme = preferences.getString(KEY_THEME, null)
         val sortOrder = preferences.getString(KEY_SORT_ORDER, null)
+        val interval = preferences.getString(KEY_SYNC_INTERVAL, null)
+        val network = preferences.getString(KEY_SYNC_NETWORK, null)
         return AppSettings(
             theme = ThemeMode.entries.firstOrNull { it.name == theme } ?: defaults.theme,
             amoled = preferences.getBoolean(KEY_AMOLED, defaults.amoled),
             dynamicColor = preferences.getBoolean(KEY_DYNAMIC_COLOR, defaults.dynamicColor),
             sortOrder = NoteSortOrder.entries.firstOrNull { it.name == sortOrder }
-                ?: defaults.sortOrder
+                ?: defaults.sortOrder,
+            syncInterval = SyncInterval.entries.firstOrNull { it.name == interval }
+                ?: defaults.syncInterval,
+            syncNetwork = SyncNetwork.entries.firstOrNull { it.name == network }
+                ?: defaults.syncNetwork
         )
     }
 
