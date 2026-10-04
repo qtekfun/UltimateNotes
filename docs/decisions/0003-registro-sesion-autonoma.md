@@ -35,6 +35,8 @@ con `git revert` del PR indicado.
 | 12 | Receta F-Droid con `commit` y `AllowedAPKSigningKeys` como `TODO`; sin capturas fabricadas. Ver ADR 0006. | Solo el mantenedor puede rellenarlos. | #23 |
 | 13 | Bug real corregido: `close()` cancelaba un autoguardado en curso y no se pedía el sync. Test intermitente estabilizado (30/30). Ver ADR 0007. | Hallado al estabilizar el test. | #25 |
 | 14 | Capturas de F-Droid con un test instrumentado y datos de demostración; script que exige indicar el dispositivo. Ver ADR 0008. | No requiere cuenta ni servidor. | #24 |
+| 15 | Previsualizaciones y fragmentos de búsqueda en texto plano (`PlainText`). | El Markdown crudo se veía en la lista. | feat/clean-markdown-previews |
+| 16 | El editor mantiene visibles los símbolos de Markdown en el 1.0. | Decisión del usuario (2A); revisar para 1.1. | — |
 | 17 | `minSdk` sube de 26 a 31. | Decisión del usuario: no se instalan emuladores y T17b no puede cubrir API 26/30. Se elimina el flujo de bloqueo para Android 8–10, las carpetas `-v31` y las comprobaciones de versión. | feat/min-sdk-31 |
 
 ## Deuda conocida
