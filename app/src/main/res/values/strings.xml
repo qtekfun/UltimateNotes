@@ -7,4 +7,22 @@
     <string name="app_name">UltimateNotes</string>
     <string name="home_title">Notes</string>
     <string name="home_version">Version %1$s</string>
+    <string name="login_title">Sign in to Nextcloud</string>
+    <string name="login_server_label">Server address</string>
+    <string name="login_server_hint" translatable="false">cloud.example.com</string>
+    <string name="login_button">Sign in</string>
+    <string name="login_checking">Checking the server…</string>
+    <string name="login_waiting">Finish signing in with your browser, then come back here.</string>
+    <string name="login_reopen">Open the browser again</string>
+    <string name="login_cancel">Cancel</string>
+    <string name="login_signing_in">Signing in…</string>
+    <string name="login_error_invalid_url">That doesn\'t look like a server address.</string>
+    <string name="login_error_insecure">Use an https:// address. UltimateNotes never connects without encryption.</string>
+    <string name="login_error_not_nextcloud">No Nextcloud server was found at that address.</string>
+    <string name="login_error_unreachable">The server can\'t be reached. Check the address and your connection.</string>
+    <string name="login_error_tls">The server\'s certificate isn\'t trusted. If it uses its own authority, install it in Android settings.</string>
+    <string name="login_error_expired">Signing in took too long. Try again.</string>
+    <string name="login_error_notes_missing">The Notes app is not installed or enabled on this server.</string>
+    <string name="login_error_unsupported_api">The Notes app on this server is too old. Update it to a version that supports API 1.2 or newer.</string>
+    <string name="login_error_unknown">Something went wrong while signing in. Try again.</string>
 </resources>
