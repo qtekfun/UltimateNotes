@@ -243,6 +243,8 @@ licensee {
     allow("Apache-2.0")
     // commonmark-java (Markdown analysis in the domain layer).
     allow("BSD-2-Clause")
+    // Glance bundles a repackaged protobuf (glance-appwidget-external-protobuf), BSD-3-Clause.
+    allow("BSD-3-Clause")
 }
 
 // Google Play Services, Firebase and Crashlytics are banned outright (F-Droid
@@ -307,6 +309,8 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.androidx.work.runtime)
     implementation(libs.androidx.biometric)
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3)
     ksp(libs.hilt.compiler)
 
     implementation(libs.retrofit)
