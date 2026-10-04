@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -16,6 +17,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -27,6 +29,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.qtekfun.ultimatenotes.R
 import com.qtekfun.ultimatenotes.domain.markdown.BlockKind
 import com.qtekfun.ultimatenotes.domain.markdown.FormatAction
@@ -100,7 +103,11 @@ private val BUTTONS = listOf(
  * no formatting icons; each button has a spoken description.
  */
 @Composable
-fun FormattingBar(onAction: (FormatAction) -> Unit, modifier: Modifier = Modifier) {
+fun FormattingBar(
+    onAction: (FormatAction) -> Unit,
+    modifier: Modifier = Modifier,
+    onOpenLink: (() -> Unit)? = null
+) {
     val description = stringResource(R.string.format_toolbar)
     Surface(
         modifier = modifier
@@ -114,6 +121,15 @@ fun FormattingBar(onAction: (FormatAction) -> Unit, modifier: Modifier = Modifie
         color = MaterialTheme.colorScheme.surfaceContainer
     ) {
         Row(Modifier.horizontalScroll(rememberScrollState())) {
+            if (onOpenLink != null) {
+                val openDescription = stringResource(R.string.format_open_link)
+                TextButton(
+                    onClick = onOpenLink,
+                    modifier = Modifier
+                        .heightIn(min = 48.dp)
+                        .semantics { contentDescription = openDescription }
+                ) { Text(openDescription) }
+            }
             for (button in BUTTONS) {
                 val buttonDescription = stringResource(button.description)
                 IconButton(
@@ -135,4 +151,10 @@ fun FormattingBar(onAction: (FormatAction) -> Unit, modifier: Modifier = Modifie
 @Composable
 private fun FormattingBarPreview() {
     UltimateNotesTheme { FormattingBar(onAction = {}) }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun FormattingBarOpenLinkPreview() {
+    UltimateNotesTheme { FormattingBar(onAction = {}, onOpenLink = {}) }
 }

@@ -32,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -41,6 +42,7 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
@@ -131,6 +133,10 @@ fun EditorContent(
 ) {
     val editable = state.loaded && !state.readOnly
     var moving by rememberSaveable { mutableStateOf(false) }
+    val links = rememberEditorLinks()
+    val caretLink by produceState<String?>(null, text, links) {
+        links.caretLinks(text).collect { value = it }
+    }
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -150,7 +156,14 @@ fun EditorContent(
                 }
             )
         },
-        bottomBar = { if (editable) FormattingBar(actions.onFormat) }
+        bottomBar = {
+            if (editable) {
+                FormattingBar(
+                    actions.onFormat,
+                    onOpenLink = caretLink?.let { uri -> { links.open(uri) } }
+                )
+            }
+        }
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
             if (state.readOnly) {
@@ -163,7 +176,7 @@ fun EditorContent(
             }
             if (state.loaded) {
                 NoteTitleField(title, editable)
-                NoteTextField(text, editable, requestFocus = isNew)
+                NoteTextField(text, editable, requestFocus = isNew, links = links)
             }
         }
     }
@@ -284,7 +297,12 @@ private fun NoteTitleField(title: TextFieldState, editable: Boolean) {
 }
 
 @Composable
-private fun NoteTextField(text: TextFieldState, editable: Boolean, requestFocus: Boolean) {
+private fun NoteTextField(
+    text: TextFieldState,
+    editable: Boolean,
+    requestFocus: Boolean,
+    links: EditorLinks
+) {
     val colors = MaterialTheme.colorScheme
     val palette = remember(colors) {
         EditorPalette(
@@ -323,6 +341,13 @@ private fun NoteTextField(text: TextFieldState, editable: Boolean, requestFocus:
                 layout = { holder.getResult?.invoke() },
                 scrollOffset = { scroll.value },
                 enabled = editable
+            )
+            .openLinkOnTap(
+                state = text,
+                links = links,
+                layout = { holder.getResult?.invoke() },
+                scrollOffset = { scroll.value },
+                readOnly = !editable
             ),
         readOnly = !editable,
         inputTransformation = ContinueListOnEnter,
@@ -334,6 +359,12 @@ private fun NoteTextField(text: TextFieldState, editable: Boolean, requestFocus:
         outputTransformation = styler,
         scrollState = scroll
     )
+}
+
+@Composable
+private fun rememberEditorLinks(): EditorLinks {
+    val context = LocalContext.current
+    return remember(context) { EditorLinks(AndroidLinkOpener(context)) }
 }
 
 /** The field's latest text layout, handed over by `onTextLayout` (not state: written during layout). */
