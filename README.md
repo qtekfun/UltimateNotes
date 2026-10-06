@@ -18,13 +18,18 @@ SPDX-License-Identifier: GPL-3.0-or-later
 [<img src="https://img.shields.io/badge/Get%20it%20on-GitHub-181717?style=for-the-badge&logo=github" alt="Get it on GitHub" height="40">](https://github.com/qtekfun/UltimateNotes/releases)
 <!-- The F-Droid badge goes next to this one once the app is published there. -->
 
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1_list.png" alt="The note list with pinned notes, previews and folders" width="23%">&nbsp;
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3_editor.png" alt="The editor, with a checklist and the formatting bar" width="23%">&nbsp;
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4_search.png" alt="Search results with the match highlighted" width="23%">&nbsp;
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/5_dark.png" alt="The note list in the dark theme" width="23%">
+
 </div>
 
 A modern, offline-first Android client for [Nextcloud Notes](https://apps.nextcloud.com/apps/notes): folders, a chronological list with previews, a WYSIWYG editor that saves plain Markdown, checklists and search. It keeps working without a connection and syncs when it can.
 
 Free software (GPL-3.0-or-later), with no Google services, no ads and no telemetry. Built for [F-Droid](https://f-droid.org).
 
-> Status: pre-release. There are no screenshots yet; they will be added to `fastlane/metadata/android/*/images/phoneScreenshots` once captured on a device.
+> Status: pre-release.
 
 ## Features
 
