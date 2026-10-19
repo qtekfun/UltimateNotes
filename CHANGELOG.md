@@ -9,6 +9,13 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+## [0.1.0-rc.2] - 2026-10-19
+
+Reach a server on your local network on Android 17.
+
+### Fixed
+- On Android 17 the app could not reach a server on your local network (for example a home server reached through split DNS), and every sync timed out. Now, only when your server is on the local network, the app explains why it needs the "Nearby devices" permission and asks for it.
+
 ## [0.1.0-rc.1] - 2026-10-04
 
 First release candidate. A pre-release: not offered on F-Droid.
