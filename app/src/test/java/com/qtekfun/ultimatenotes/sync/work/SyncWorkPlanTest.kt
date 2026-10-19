@@ -3,6 +3,7 @@
 
 package com.qtekfun.ultimatenotes.sync.work
 
+import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.WorkInfo
 import com.qtekfun.ultimatenotes.data.settings.AppSettings
@@ -76,5 +77,26 @@ class SyncWorkPlanTest {
         assertFalse(SyncScheduler.isSettled(WorkInfo.State.ENQUEUED, 0))
         assertFalse(SyncScheduler.isSettled(WorkInfo.State.RUNNING, 0))
         assertFalse(SyncScheduler.isSettled(WorkInfo.State.RUNNING, 3))
+    }
+
+    @Test
+    fun `a request replaces only a sync that waits to retry a failure`() {
+        assertEquals(ExistingWorkPolicy.KEEP, SyncScheduler.policyFor(emptyList()))
+        assertEquals(
+            ExistingWorkPolicy.KEEP,
+            SyncScheduler.policyFor(listOf(WorkInfo.State.ENQUEUED to 0))
+        )
+        assertEquals(
+            ExistingWorkPolicy.KEEP,
+            SyncScheduler.policyFor(listOf(WorkInfo.State.RUNNING to 3))
+        )
+        assertEquals(
+            ExistingWorkPolicy.KEEP,
+            SyncScheduler.policyFor(listOf(WorkInfo.State.SUCCEEDED to 2))
+        )
+        assertEquals(
+            ExistingWorkPolicy.REPLACE,
+            SyncScheduler.policyFor(listOf(WorkInfo.State.ENQUEUED to 1))
+        )
     }
 }
