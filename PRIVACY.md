@@ -42,6 +42,7 @@ UltimateNotes is a client for the notes in your own Nextcloud. It has no servers
 | Permission | Why |
 |---|---|
 | Internet (`INTERNET`) | To talk to your Nextcloud server. |
+| Local network (`ACCESS_LOCAL_NETWORK`, Android 17+) | Only if your server is on your local network, for example a home server reached through split DNS: without it Android blocks the connection. Asked only in that case, naming your server, and used for nothing but talking to it. |
 | Foreground service (`FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_DATA_SYNC`) | Lets a sync that you start finish while the app is in the background. |
 
 No storage, contacts, location, camera or microphone permission is requested. If you use a self-hosted server with your own certificate authority, the app trusts certificates installed by the user in Android, as well as the system ones; certificate validation is never turned off.
@@ -67,5 +68,6 @@ UltimateNotes es un cliente para las notas de tu propio Nextcloud. No tiene serv
 | Permiso | Motivo |
 |---|---|
 | Internet (`INTERNET`) | Para hablar con tu servidor Nextcloud. |
+| Red local (`ACCESS_LOCAL_NETWORK`, Android 17+) | Solo si tu servidor está en tu red local, por ejemplo un servidor en casa al que llegas con DNS dividido: sin él, Android bloquea la conexión. Solo se pide en ese caso, con el nombre de tu servidor, y no se usa para nada más que hablar con él. |
 
 Este documento crecerá con las funciones (inicio de sesión, copia local de las notas, bloqueo biométrico, exportación).

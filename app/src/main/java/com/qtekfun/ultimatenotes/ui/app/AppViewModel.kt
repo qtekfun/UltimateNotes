@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.qtekfun.ultimatenotes.data.auth.AccountSession
 import com.qtekfun.ultimatenotes.data.settings.SettingsRepository
+import com.qtekfun.ultimatenotes.ui.localnet.LocalNetwork
 import com.qtekfun.ultimatenotes.ui.theme.ThemeOptions
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -40,6 +41,11 @@ class AppViewModel @Inject constructor(session: AccountSession, settings: Settin
             else -> AppDestination.MAIN
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, AppDestination.LOADING)
+
+    /** The host of the signed-in account's server, for the local network check; null if none. */
+    val serverHost: StateFlow<String?> = session.activeAccount
+        .map { account -> account?.let { LocalNetwork.hostOf(it.serverUrl) } }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     val theme: StateFlow<ThemeOptions> = settings.settings
         .map { ThemeOptions(it.theme, it.amoled, it.dynamicColor) }
