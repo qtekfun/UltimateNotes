@@ -7,6 +7,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Android 17: reach a server on the local network (asked only when it is there). -->
+    <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
     <!-- Expedited sync work runs as a foreground service before Android 12. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />

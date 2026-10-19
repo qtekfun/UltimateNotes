@@ -20,7 +20,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.qtekfun.ultimatenotes.domain.widget.LaunchRequest
 import com.qtekfun.ultimatenotes.ui.editor.EditorScreen
 import com.qtekfun.ultimatenotes.ui.editor.NEW_NOTE_ID
+import com.qtekfun.ultimatenotes.ui.localnet.LocalNetwork
+import com.qtekfun.ultimatenotes.ui.localnet.LocalNetworkAccess
 import com.qtekfun.ultimatenotes.ui.login.LoginScreen
+import com.qtekfun.ultimatenotes.ui.login.LoginViewModel
 import com.qtekfun.ultimatenotes.ui.main.MainScreen
 import com.qtekfun.ultimatenotes.ui.main.MainViewModel
 import com.qtekfun.ultimatenotes.ui.settings.SettingsScreen
@@ -94,6 +97,27 @@ fun AppRoot(
                     }
                 }
             }
+            LocalNetworkCheck(destination, viewModel)
         }
     }
+}
+
+/**
+ * Asks for the local network permission when the server is on the local network (Android 17
+ * blocks it otherwise): the account's server, or, while signing in, the one being polled.
+ */
+@Composable
+private fun LocalNetworkCheck(
+    destination: AppDestination,
+    app: AppViewModel,
+    login: LoginViewModel = viewModel()
+) {
+    val accountHost by app.serverHost.collectAsStateWithLifecycle()
+    val loginState by login.state.collectAsStateWithLifecycle()
+    val host = when (destination) {
+        AppDestination.LOADING -> null
+        AppDestination.MAIN -> accountHost
+        AppDestination.LOGIN -> loginState.step?.let { LocalNetwork.hostOf(loginState.server) }
+    }
+    LocalNetworkAccess(viewModel(), host)
 }

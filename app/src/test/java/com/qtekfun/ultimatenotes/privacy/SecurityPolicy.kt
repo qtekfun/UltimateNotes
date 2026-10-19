@@ -20,7 +20,9 @@ object SecurityPolicy {
     val ALLOWED_PERMISSIONS = setOf(
         "android.permission.INTERNET",
         "android.permission.FOREGROUND_SERVICE",
-        "android.permission.FOREGROUND_SERVICE_DATA_SYNC"
+        "android.permission.FOREGROUND_SERVICE_DATA_SYNC",
+        // Android 17: only asked when the server is on the local network (see PRIVACY.md).
+        "android.permission.ACCESS_LOCAL_NETWORK"
     )
 
     /** The only components other apps (the launcher, the widget host) may reach. */

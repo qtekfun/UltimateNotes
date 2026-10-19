@@ -184,4 +184,12 @@
     <string name="export_save_pdf">Save PDF to a file</string>
     <string name="export_cancel">Cancel</string>
     <string name="export_failed">The note could not be exported.</string>
+
+    <!-- Local network permission (Android 17): asked only when the server is on the local network. -->
+    <string name="local_network_title">Allow access to your local network?</string>
+    <string name="local_network_rationale">Your server, %1$s, is on your local network. Android blocks apps from reaching devices there until you allow \"Nearby devices\" access. UltimateNotes uses it only to talk to your own server.</string>
+    <string name="local_network_denied">Android is still blocking the connection to %1$s. Open Settings, go to Permissions and allow \"Nearby devices\" for UltimateNotes, then come back.</string>
+    <string name="local_network_allow">Allow</string>
+    <string name="local_network_open_settings">Open Settings</string>
+    <string name="local_network_not_now">Not now</string>
 </resources>

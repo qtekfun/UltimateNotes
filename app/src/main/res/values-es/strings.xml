@@ -185,4 +185,11 @@
     <string name="export_save_pdf">Guardar PDF en un archivo</string>
     <string name="export_cancel">Cancelar</string>
     <string name="export_failed">No se pudo exportar la nota.</string>
+
+    <string name="local_network_title">¿Permitir el acceso a tu red local?</string>
+    <string name="local_network_rationale">Tu servidor, %1$s, está en tu red local. Android impide que las apps lleguen a los dispositivos de esa red hasta que permites el acceso a «Dispositivos cercanos». UltimateNotes lo usa solo para hablar con tu propio servidor.</string>
+    <string name="local_network_denied">Android sigue bloqueando la conexión con %1$s. Abre Ajustes, entra en Permisos y permite «Dispositivos cercanos» para UltimateNotes; después vuelve.</string>
+    <string name="local_network_allow">Permitir</string>
+    <string name="local_network_open_settings">Abrir Ajustes</string>
+    <string name="local_network_not_now">Ahora no</string>
 </resources>

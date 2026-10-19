@@ -69,6 +69,18 @@ class AppViewModelTest {
     }
 
     @Test
+    fun `the server host follows the signed-in account`() = runTest {
+        val model = viewModel()
+        assertEquals(null, model.serverHost.value)
+
+        session.signIn(server, Credentials("ana", "secret"))
+        assertEquals("cloud.example.com", model.serverHost.value)
+
+        session.signOut()
+        assertEquals(null, model.serverHost.value)
+    }
+
+    @Test
     fun `the theme follows the settings`() = runTest {
         val repository = SettingsRepository(preferences)
         val model = AppViewModel(session, repository)
