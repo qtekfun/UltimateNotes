@@ -62,7 +62,7 @@ class SyncScheduler @Inject constructor(
             )
             .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
             .build()
-        val pending = workManager.getWorkInfosForUniqueWork(SyncWorkPlan.ONE_TIME_WORK).await()
+        val pending = workManager.getWorkInfosForUniqueWorkFlow(SyncWorkPlan.ONE_TIME_WORK).first()
         val policy = policyFor(pending.map { it.state to it.runAttemptCount })
         workManager.enqueueUniqueWork(SyncWorkPlan.ONE_TIME_WORK, policy, request).await()
     }
