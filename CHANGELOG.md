@@ -9,6 +9,13 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+## [0.1.0-rc.3] - 2026-10-20
+
+Sync right away once the local network is allowed.
+
+### Fixed
+- After you allowed local network access, or after a run of failed syncs, opening the app or pulling to refresh could do nothing for a long while (up to hours), because the app waited for the retry delay of the failed syncs. Now it syncs at once.
+
 ## [0.1.0-rc.2] - 2026-10-19
 
 Reach a server on your local network on Android 17.
