@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 [versions]
-agp = "9.4.1"
+agp = "9.5.0"
 kotlin = "2.4.21"
 ksp = "2.3.12"
 hilt = "2.60.1"
@@ -17,10 +17,10 @@ ktlint = "1.8.0"
 kover = "0.9.11"
 licensee = "1.14.1"
 retrofit = "3.0.0"
-okhttp = "5.5.0"
+okhttp = "5.5.1"
 serialization = "1.12.0"
 coroutines = "1.11.0"
-commonmark = "0.30.1"
+commonmark = "0.31.0"
 room = "3.0.3"
 sqlite = "2.7.1"
 turbine = "1.2.1"
